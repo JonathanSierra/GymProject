@@ -27,7 +27,7 @@ public class FrmLoginProgram extends javax.swing.JFrame {
         txtPass.setText("");
         listaUsuarios = new ArrayList();
         listaUsuarios.add(new Users(1, "JSIERRA", "1234", 3));
-        listaUsuarios.add(new Users(1, "PIPE", "5678", 3));
+        listaUsuarios.add(new Users(1, "PIPE", "1234", 3));
         listaUsuarios.add(new Users(1, "KCANDELARIO", "1234", 2));
         
     }
@@ -44,7 +44,7 @@ public class FrmLoginProgram extends javax.swing.JFrame {
             }
         }
         if(id != 0){
-            GymProgramMain Main = new GymProgramMain(id, profile, user);
+            frmGym Main = new frmGym(id, profile, user);
             Main.setVisible(true);
             this.dispose();
         }else{

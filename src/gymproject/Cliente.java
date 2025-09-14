@@ -1,0 +1,80 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
+package gymproject;
+
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+
+/**
+ *
+ * @author xdand
+ */
+public class Cliente {
+    private String nombre;
+    private String direccion;
+    private int cedula;
+    private int telefono;
+    private String membresia;
+    private int valorMembresia;
+    private String estado;
+    private String fecha;
+    private String estadodePago;
+
+
+    public Cliente(String nombre, String direccion, int cedula, int telefono, String membresia, int valorMembresia, String estado, String estadodePago) {
+        this.nombre = nombre;
+        this.direccion = direccion;
+        this.cedula = cedula;
+        this.telefono = telefono;
+        this.membresia = membresia;
+        this.valorMembresia = valorMembresia;
+        this.estado = estado;
+        this.estadodePago = estadodePago;
+        fecha = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss")
+                .format(Calendar.getInstance().getTime());
+       
+    }
+
+    public String getFecha() {
+        return fecha;
+    }
+
+    public String getNombre() {
+        return nombre;
+    }
+
+    public String getDireccion() {
+        return direccion;
+    }
+
+    public int getCedula() {
+        return cedula;
+    }
+
+    public int getTelefono() {
+        return telefono;
+    }
+
+    public String getMembresia() {
+        return membresia;
+    }
+
+    public int getValorMembresia() {
+        return valorMembresia;
+    }
+
+    public String getEstado() {
+        return estado;
+    }
+
+    public String getEstadodePago() {
+        return estadodePago;
+    }
+
+    
+    
+    
+    
+}
