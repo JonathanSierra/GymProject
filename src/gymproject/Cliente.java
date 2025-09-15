@@ -19,18 +19,19 @@ public class Cliente {
     private int telefono;
     private String membresia;
     private int valorMembresia;
-   
+    private String estadoMembresia;
     private String fecha;
     private String estadodePago;
 
 
-    public Cliente(int id, int cedula, String nombre, String direccion, int telefono, String membresia, int valorMembresia,  String estadodePago) {
+    public Cliente(int id, int cedula, String nombre, String direccion, int telefono, String membresia, int valorMembresia,String estadoMembresia,  String estadodePago) {
         this.id = id;
         this.nombre = nombre;
         this.direccion = direccion;
         this.cedula = cedula;
         this.telefono = telefono;
         this.membresia = membresia;
+        this.estadoMembresia = estadoMembresia;
         this.valorMembresia = valorMembresia;
      
         this.estadodePago = estadodePago;
@@ -65,6 +66,10 @@ public class Cliente {
 
     public String getMembresia() {
         return membresia;
+    }
+    
+    public String getEstadoMembresia(){
+        return estadoMembresia;
     }
 
     public int getValorMembresia() {

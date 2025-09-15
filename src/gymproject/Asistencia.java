@@ -12,30 +12,25 @@ import java.util.Calendar;
  * @author jonat
  */
 public class Asistencia {
-    private String dia;
-    private int hora;
-    private Cliente cliente;
+    private int MiembroId;
+    private String fecha;
+    private String asistio;
 
-    public Asistencia(String dia, int hora,Cliente cliente) {
-        this.dia = dia;
-        this.hora = hora;
-        this.cliente=cliente;
+    public Asistencia(int MiembroId, String asistio) {
+        this.MiembroId = MiembroId;
+        this.asistio = asistio;
+        this.fecha = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(Calendar.getInstance().getTime());
     }
 
-    public Cliente getCliente() {
-        return cliente;
+    public int getMiembroId() {
+        return MiembroId;
     }
 
-    public String getDia() {
-        return dia;
+    public String getFecha() {
+        return fecha;
     }
 
-    public int getHora() {
-        return hora;
+    public String getAsistio() {
+        return asistio;
     }
-    
-    
-    
-
-    
 }

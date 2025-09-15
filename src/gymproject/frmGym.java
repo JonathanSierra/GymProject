@@ -27,8 +27,9 @@ public class frmGym extends javax.swing.JFrame {
     ArrayList<Asistencia> listaAsistencias;
     private int idContador = 0;
     String[] actividad={"ID", "Cedula","Nombre","Estado de la Membresia"};
-    String[] asistencias={"ID","Cedula","Nombre","Dias","Horas"};
+    String[] asistencias={"Fecha/Hora","ID","Cedula","Nombre","Asistió"};
     String[] periodoDepago={"Fecha","Pago"};
+    String[] tiposDeMembresia ={"ID", "Cedula", "Nombre", "Membresia"};
     String[] informacion={"ID","Cedula","Nombre","Direccion","Telefono","Membresia","precio","Pago","Estado de la Membresia",};
     public frmGym(int idUser, int profile, String username) {
         initComponents();
@@ -44,10 +45,9 @@ public class frmGym extends javax.swing.JFrame {
         txtCedula.setText("");
         txtTelefono.setText("");
         txtDirecion.setText("");
-        txtDia.setText("");
-        txtHora.setText("");
         llenarCombo();
-        llenarMiembros();
+        llenarMembresias();
+        llenarEstadoMembresias();
         mostrarInfo();
     }
    
@@ -66,6 +66,8 @@ public class frmGym extends javax.swing.JFrame {
     /*Para registrar los usuarios bro*/
     public void guardarInfo()
     {
+        try
+        {
         if(!txtNombre.getText().isEmpty() && !txtCedula.getText().isEmpty()
                 && !txtTelefono.getText().isEmpty() && !txtDirecion.getText().isEmpty()
                 && comboMembresias.getSelectedIndex()>0 && (rbPago.isSelected() || rbEspera.isSelected()))
@@ -80,25 +82,38 @@ public class frmGym extends javax.swing.JFrame {
             int cedula=Integer.parseInt(txtCedula.getText());
             String membresia=membresias.get(ItemSelecionado).getMembresia();
             int valorMembresia=membresias.get(ItemSelecionado).getPrecioMembresia();
-            String estado="";
-           
+            String estadoDePago="";
+            String estadoDeMembresia="";
+            String asistio = "";
            
             
             if(rbPago.isSelected()){
-                estado="Pago";
+                estadoDePago="Pago";
             }
             else
             {
-                estado="Pendiente";
+                estadoDePago="Pendiente";
             }
-         
+            if(rbActivo.isSelected()){
+                estadoDeMembresia = "Activo";
+            }
+            else
+            {
+                estadoDeMembresia = "Inactivo";
+            }
+            if(rbSi.isSelected()){
+                asistio = "Si";
+            }
+            else
+            {
+                asistio = "No";
+            }
             
-            
-            registros.add(new Cliente(id, cedula,nombre,direccion,telefono,membresia,valorMembresia,estado));
+            listaAsistencias.add(new Asistencia(id, asistio));
+            registros.add(new Cliente(id, cedula,nombre,direccion,telefono,membresia,valorMembresia,estadoDeMembresia,estadoDePago));
             JOptionPane.showMessageDialog(rootPane, 
                     "Miembro registrado con exito");
             mostrarInfo();
-            llenarMiembros();
             txtNombre.setText("");
             txtCedula.setText("");
             txtTelefono.setText("");
@@ -109,6 +124,10 @@ public class frmGym extends javax.swing.JFrame {
         {
             JOptionPane.showMessageDialog(rootPane, 
                     "Faltan campos por completar");
+        }
+        } catch(Exception e){
+                        JOptionPane.showMessageDialog(rootPane, 
+                    "Error al ingresar el miembro, Intenta de nuevo");
         }
     }
     
@@ -142,7 +161,7 @@ public class frmGym extends javax.swing.JFrame {
     
     // inicio de los reportes de miembros activos/inactivos
     
-    public void miembrosActivos(){
+    /*public void miembrosActivos(){
         String estado="";
         if(comboMiembros2.getSelectedIndex()>0 && (rbActivo.isSelected() || rbInactivo.isSelected()))
         {
@@ -161,23 +180,39 @@ public class frmGym extends javax.swing.JFrame {
             
         }
         
-    }
+    }*/
     public void mostrarMiembrosActivos()
     {
-        
         DefaultTableModel modelo=new DefaultTableModel();
         modelo.setColumnIdentifiers(actividad);
         
-        for (int i = 0; i < estados.size(); i++) {
-            Estado e=estados.get(i);
+        for (int i = 0; i < registros.size(); i++) {
+            if(comboEstadoMembresia.getSelectedIndex() == 1)
+            {
+            if(registros.get(i).getEstadoMembresia().equalsIgnoreCase("Activo"))
+            {
             modelo.addRow(new Object[]
             {
-                e.getCliente().getId(),
-                e.getCliente().getCedula(),
-                e.getCliente().getNombre(),
-                e.getEstado()
+                registros.get(i).getId(),
+                registros.get(i).getCedula(),
+                registros.get(i).getNombre(),
+                registros.get(i).getEstadoMembresia()
             });
-            
+            }
+            }
+            else if(comboEstadoMembresia.getSelectedIndex() == 2)
+            {
+                if(registros.get(i).getEstadoMembresia().equalsIgnoreCase("Inactivo"))
+            {
+            modelo.addRow(new Object[]
+            {
+                registros.get(i).getId(),
+                registros.get(i).getCedula(),
+                registros.get(i).getNombre(),
+                registros.get(i).getEstadoMembresia()
+            });
+            }
+            }
         }
         tableRegistro.setModel(modelo);
     }
@@ -210,7 +245,7 @@ public class frmGym extends javax.swing.JFrame {
    
     
     // funcion que llena los dos comboBox
-    public void llenarMiembros()
+    /*public void llenarMiembros()
     {
         comboMiembros.removeAllItems();
         comboMiembros.addItem("Seleccione un miembro");
@@ -221,47 +256,86 @@ public class frmGym extends javax.swing.JFrame {
             comboMiembros.addItem(registros.get(i).getNombre());
             comboMiembros2.addItem(registros.get(i).getNombre());
         }
-    }
+    }*/
     // fin de la funcion
     
+    public void llenarMembresias()
+    {
+        comboMembresia.removeAllItems();
+        comboMembresia.addItem("Seleccione una membresia");
+        
+        for (int i = 0; i < membresias.size(); i++) {
+            comboMembresia.addItem(membresias.get(i).getMembresia());
+        }
+    }
+    
+    public void llenarEstadoMembresias(){
+        comboEstadoMembresia.removeAllItems();
+        comboEstadoMembresia.addItem("Seleccione un estado");
+        comboEstadoMembresia.addItem("Activo");
+        comboEstadoMembresia.addItem("Inactivo");
+    }
     
     //inicio para reporte de asistencias
-    public void Asistencia()
-    {
-        if(!txtDia.getText().isEmpty() && !txtHora.getText().isEmpty()
-                && comboMiembros.getSelectedIndex()>0)
-        {
-            int itemSelecionado=comboMiembros.getSelectedIndex()-1;
-            String dia=txtDia.getText();
-            int hora=Integer.parseInt(txtHora.getText());
-             Cliente cliente = registros.get(itemSelecionado);
-            
-            listaAsistencias.add(new Asistencia(dia,hora,cliente));
-            mostrarAsistencias();
-        }
-        
-        
-    }
-    public void mostrarAsistencias()
-    {
-        DefaultTableModel modelo = new DefaultTableModel();
+    public void mostrarAsistencias(){
+        DefaultTableModel modelo=new DefaultTableModel();
         modelo.setColumnIdentifiers(asistencias);
-        for (int i = 0; i < listaAsistencias.size(); i++) {
-            Asistencia a=listaAsistencias.get(i);
+        for (int i = 0; i < registros.size(); i++) {
             modelo.addRow(new Object[]
             {
-                a.getCliente().getId(),
-                a.getCliente().getCedula(),
-                a.getCliente().getNombre(),
-                a.getDia(),
-                a.getHora()
-
+                registros.get(i).getFecha(),
+                registros.get(i).getId(),
+                registros.get(i).getCedula(),
+                registros.get(i).getNombre(),
+                listaAsistencias.get(i).getAsistio()
             });
             
         }
         tableRegistro.setModel(modelo);
     }
+        
     //fin para mostrar asistencias
+    
+    public void tiposDeMembresia()
+    {
+        DefaultTableModel modelo = new DefaultTableModel();
+        modelo.setColumnIdentifiers(tiposDeMembresia);
+        for (int i = 0; i < registros.size(); i++) {
+            
+        if(comboMembresia.getSelectedIndex()== 1)
+        {
+        if(registros.get(i).getMembresia().equalsIgnoreCase("Mensual"))
+            {    
+            modelo.addRow(new Object[]
+            {
+                registros.get(i).getId(),
+                registros.get(i).getCedula(),
+                registros.get(i).getNombre(),
+                registros.get(i).getMembresia()
+            });
+            
+        }
+        tableRegistro.setModel(modelo);
+        }
+        else if(comboMembresia.getSelectedIndex()== 2)
+        {
+        {
+        if(registros.get(i).getMembresia().equalsIgnoreCase("Anual"))
+            {    
+            modelo.addRow(new Object[]
+            {
+                registros.get(i).getId(),
+                registros.get(i).getCedula(),
+                registros.get(i).getNombre(),
+                registros.get(i).getMembresia()
+            });
+            
+        }
+        tableRegistro.setModel(modelo);
+        }
+        }
+        }
+    }
    
     
     
@@ -300,17 +374,17 @@ public class frmGym extends javax.swing.JFrame {
         btnRegistrar = new javax.swing.JButton();
         jScrollPane2 = new javax.swing.JScrollPane();
         tableRegistro = new javax.swing.JTable();
-        btnAsistencia = new javax.swing.JButton();
+        btnMiembrosActivos = new javax.swing.JButton();
         btnPeriodo = new javax.swing.JButton();
-        btnCitas = new javax.swing.JButton();
+        btnMembresias = new javax.swing.JButton();
         btnAsistencias = new javax.swing.JButton();
         jLabel8 = new javax.swing.JLabel();
-        comboMiembros = new javax.swing.JComboBox<>();
-        txtDia = new javax.swing.JTextField();
-        txtHora = new javax.swing.JTextField();
-        jLabel9 = new javax.swing.JLabel();
-        jLabel10 = new javax.swing.JLabel();
-        comboMiembros2 = new javax.swing.JComboBox<>();
+        comboMembresia = new javax.swing.JComboBox<>();
+        jLabel7 = new javax.swing.JLabel();
+        rbSi = new javax.swing.JRadioButton();
+        rbNo = new javax.swing.JRadioButton();
+        jSeparator2 = new javax.swing.JSeparator();
+        comboEstadoMembresia = new javax.swing.JComboBox<>();
 
         jButton1.setText("jButton1");
 
@@ -404,10 +478,10 @@ public class frmGym extends javax.swing.JFrame {
         ));
         jScrollPane2.setViewportView(tableRegistro);
 
-        btnAsistencia.setText("Activos/Inactivos");
-        btnAsistencia.addActionListener(new java.awt.event.ActionListener() {
+        btnMiembrosActivos.setText("Activos/Inactivos");
+        btnMiembrosActivos.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnAsistenciaActionPerformed(evt);
+                btnMiembrosActivosActionPerformed(evt);
             }
         });
 
@@ -418,7 +492,12 @@ public class frmGym extends javax.swing.JFrame {
             }
         });
 
-        btnCitas.setText("Tipo de membresia");
+        btnMembresias.setText("Tipo de membresia");
+        btnMembresias.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnMembresiasActionPerformed(evt);
+            }
+        });
 
         btnAsistencias.setText("Asistencias");
         btnAsistencias.addActionListener(new java.awt.event.ActionListener() {
@@ -429,163 +508,163 @@ public class frmGym extends javax.swing.JFrame {
 
         jLabel8.setText("Reportes:");
 
-        comboMiembros.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        comboMembresia.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        comboMembresia.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                comboMembresiaActionPerformed(evt);
+            }
+        });
 
-        txtDia.setText("jTextField1");
+        jLabel7.setText("Asistencia");
 
-        txtHora.setText("jTextField2");
+        buttonGroup3.add(rbSi);
+        rbSi.setText("Si");
 
-        jLabel9.setText("Dia:");
+        buttonGroup3.add(rbNo);
+        rbNo.setText("No");
 
-        jLabel10.setText("Hora:");
-
-        comboMiembros2.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        comboEstadoMembresia.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        comboEstadoMembresia.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                comboEstadoMembresiaActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(jScrollPane2)
-                .addContainerGap())
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane2)
                     .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(txtDia, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addGroup(layout.createSequentialGroup()
-                                    .addComponent(jLabel9)
-                                    .addGap(58, 58, 58)
-                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                        .addGroup(layout.createSequentialGroup()
-                                            .addGap(6, 6, 6)
-                                            .addComponent(txtHora, javax.swing.GroupLayout.PREFERRED_SIZE, 83, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                        .addComponent(jLabel10)))
-                                .addComponent(comboMiembros, javax.swing.GroupLayout.PREFERRED_SIZE, 175, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel6, javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(rbActivo)
-                                .addComponent(rbInactivo))
-                            .addComponent(btnAsistencia, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 125, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addContainerGap())
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel1)
-                            .addComponent(jLabel2)
-                            .addComponent(txtNombre, javax.swing.GroupLayout.PREFERRED_SIZE, 112, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(txtCedula, javax.swing.GroupLayout.PREFERRED_SIZE, 112, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 39, Short.MAX_VALUE)
+                        .addContainerGap()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(txtTelefono, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(jLabel3))
-                                .addGap(30, 30, 30)
+                                    .addComponent(jLabel1)
+                                    .addComponent(jLabel2)
+                                    .addComponent(txtNombre, javax.swing.GroupLayout.PREFERRED_SIZE, 112, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(txtCedula, javax.swing.GroupLayout.PREFERRED_SIZE, 112, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 50, Short.MAX_VALUE)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(comboMembresias, javax.swing.GroupLayout.PREFERRED_SIZE, 317, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addGroup(layout.createSequentialGroup()
-                                        .addComponent(jLabel5)
-                                        .addGap(18, 18, 18)
-                                        .addComponent(btnRegistrar, javax.swing.GroupLayout.PREFERRED_SIZE, 125, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                            .addGroup(layout.createSequentialGroup()
-                                .addGap(1, 1, 1)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jLabel4)
-                                    .addComponent(txtDirecion, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addGap(30, 30, 30)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(rbPago)
-                                    .addComponent(rbEspera))))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(comboMiembros2, javax.swing.GroupLayout.PREFERRED_SIZE, 175, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(btnAsistencias, javax.swing.GroupLayout.PREFERRED_SIZE, 99, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addGap(137, 137, 137)
+                                        .addComponent(rbEspera))
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addComponent(txtTelefono, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addComponent(jLabel3)
+                                            .addGroup(layout.createSequentialGroup()
+                                                .addGap(1, 1, 1)
+                                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                                    .addComponent(jLabel4)
+                                                    .addComponent(txtDirecion, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                                        .addGap(29, 29, 29)
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addComponent(comboMembresias, javax.swing.GroupLayout.PREFERRED_SIZE, 317, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addGroup(layout.createSequentialGroup()
+                                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                                    .addComponent(jLabel5)
+                                                    .addGroup(layout.createSequentialGroup()
+                                                        .addGap(6, 6, 6)
+                                                        .addComponent(rbPago)))
+                                                .addGap(18, 18, 18)
+                                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                                    .addComponent(jLabel7)
+                                                    .addComponent(rbNo)
+                                                    .addComponent(rbSi))
+                                                .addGap(18, 18, 18)
+                                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                                    .addComponent(rbActivo)
+                                                    .addComponent(rbInactivo)
+                                                    .addComponent(jLabel6))))))
+                                .addGap(5, 5, 5))
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(jLabel8)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(btnPeriodo)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(btnCitas)))
-                        .addGap(0, 0, Short.MAX_VALUE))))
+                                .addGap(0, 0, Short.MAX_VALUE)))
+                        .addGap(29, 29, 29)
+                        .addComponent(btnRegistrar, javax.swing.GroupLayout.PREFERRED_SIZE, 125, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(24, 24, 24))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(100, 100, 100)
+                        .addComponent(btnPeriodo)
+                        .addGap(52, 52, 52)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(btnMembresias)
+                                .addGap(55, 55, 55)
+                                .addComponent(btnAsistencias, javax.swing.GroupLayout.PREFERRED_SIZE, 99, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(comboMembresia, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(56, 56, 56)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(comboEstadoMembresia, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(btnMiembrosActivos, javax.swing.GroupLayout.PREFERRED_SIZE, 125, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(0, 0, Short.MAX_VALUE)))
+                .addContainerGap())
+            .addComponent(jSeparator2, javax.swing.GroupLayout.Alignment.TRAILING)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(18, 18, 18)
+                .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(comboMiembros2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jLabel6)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel3)
+                            .addComponent(jLabel1))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(rbInactivo)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(txtCedula, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(txtTelefono, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(11, 11, 11)
+                                .addComponent(jLabel4))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(10, 10, 10)
+                                .addComponent(jLabel2)))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(rbActivo)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(txtNombre, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(txtDirecion, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                    .addComponent(jLabel3)
-                                    .addComponent(jLabel1))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                    .addComponent(txtCedula, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(txtTelefono, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addGap(11, 11, 11)
-                                        .addComponent(jLabel4))
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addGap(10, 10, 10)
-                                        .addComponent(jLabel2)))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                    .addComponent(txtNombre, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(txtDirecion, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(comboMembresias, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(btnRegistrar, javax.swing.GroupLayout.PREFERRED_SIZE, 53, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(layout.createSequentialGroup()
                                 .addGap(32, 32, 32)
-                                .addComponent(jLabel5)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(rbPago)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(rbEspera)))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 13, Short.MAX_VALUE)
-                        .addComponent(comboMiembros, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(21, 21, 21)))
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel9)
-                            .addComponent(jLabel10))
-                        .addGap(19, 19, 19)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(txtDia, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(txtHora, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addComponent(btnAsistencia, javax.swing.GroupLayout.PREFERRED_SIZE, 53, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btnAsistencias, javax.swing.GroupLayout.PREFERRED_SIZE, 53, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 11, Short.MAX_VALUE)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(btnCitas, javax.swing.GroupLayout.PREFERRED_SIZE, 53, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(btnPeriodo, javax.swing.GroupLayout.PREFERRED_SIZE, 53, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                    .addComponent(jLabel5)
+                                    .addComponent(jLabel7)
+                                    .addComponent(jLabel6)))
+                            .addComponent(comboMembresias, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jLabel8)))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(rbPago)
+                            .addComponent(rbActivo)
+                            .addComponent(rbSi))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(rbEspera)
+                            .addComponent(rbNo)
+                            .addComponent(rbInactivo)))
+                    .addComponent(btnRegistrar, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 53, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(7, 7, 7)
+                .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 109, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(jLabel8)
+                        .addGap(11, 11, 11)
+                        .addComponent(comboMembresia, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(comboEstadoMembresia, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btnAsistencias, javax.swing.GroupLayout.PREFERRED_SIZE, 53, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnMiembrosActivos, javax.swing.GroupLayout.PREFERRED_SIZE, 53, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnMembresias, javax.swing.GroupLayout.PREFERRED_SIZE, 53, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnPeriodo, javax.swing.GroupLayout.PREFERRED_SIZE, 53, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 98, Short.MAX_VALUE)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 100, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -597,10 +676,10 @@ public class frmGym extends javax.swing.JFrame {
         guardarInfo();
     }//GEN-LAST:event_btnRegistrarActionPerformed
 
-    private void btnAsistenciaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAsistenciaActionPerformed
+    private void btnMiembrosActivosActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnMiembrosActivosActionPerformed
         // TODO add your handling code here:
-         miembrosActivos();
-    }//GEN-LAST:event_btnAsistenciaActionPerformed
+         mostrarMiembrosActivos();
+    }//GEN-LAST:event_btnMiembrosActivosActionPerformed
 
     private void btnPeriodoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPeriodoActionPerformed
         // TODO add your handling code here:
@@ -609,9 +688,22 @@ public class frmGym extends javax.swing.JFrame {
 
     private void btnAsistenciasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAsistenciasActionPerformed
         // TODO add your handling code here:
-        Asistencia();
+        mostrarAsistencias();
       
     }//GEN-LAST:event_btnAsistenciasActionPerformed
+
+    private void comboMembresiaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_comboMembresiaActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_comboMembresiaActionPerformed
+
+    private void btnMembresiasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnMembresiasActionPerformed
+        // TODO add your handling code here:
+        tiposDeMembresia();
+    }//GEN-LAST:event_btnMembresiasActionPerformed
+
+    private void comboEstadoMembresiaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_comboEstadoMembresiaActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_comboEstadoMembresiaActionPerformed
 
     /**
      * @param args the command line arguments
@@ -649,44 +741,44 @@ public class frmGym extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton btnAsistencia;
     private javax.swing.JButton btnAsistencias;
-    private javax.swing.JButton btnCitas;
+    private javax.swing.JButton btnMembresias;
+    private javax.swing.JButton btnMiembrosActivos;
     private javax.swing.JButton btnPeriodo;
     private javax.swing.JButton btnRegistrar;
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.ButtonGroup buttonGroup2;
     private javax.swing.ButtonGroup buttonGroup3;
+    private javax.swing.JComboBox<String> comboEstadoMembresia;
+    private javax.swing.JComboBox<String> comboMembresia;
     private javax.swing.JComboBox<String> comboMembresias;
-    private javax.swing.JComboBox<String> comboMiembros;
-    private javax.swing.JComboBox<String> comboMiembros2;
     private javax.swing.JButton jButton1;
     private javax.swing.JCheckBox jCheckBox1;
     private javax.swing.JCheckBox jCheckBox2;
     private javax.swing.JCheckBox jCheckBox3;
     private javax.swing.JInternalFrame jInternalFrame1;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
-    private javax.swing.JLabel jLabel9;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JSeparator jSeparator2;
     private javax.swing.JTable jTable1;
     private javax.swing.JToggleButton jToggleButton1;
     private javax.swing.JRadioButton rbActivo;
     private javax.swing.JRadioButton rbEspera;
     private javax.swing.JRadioButton rbInactivo;
+    private javax.swing.JRadioButton rbNo;
     private javax.swing.JRadioButton rbPago;
+    private javax.swing.JRadioButton rbSi;
     private javax.swing.JTable tableRegistro;
     private javax.swing.JTextField txtCedula;
-    private javax.swing.JTextField txtDia;
     private javax.swing.JTextField txtDirecion;
-    private javax.swing.JTextField txtHora;
     private javax.swing.JTextField txtNombre;
     private javax.swing.JTextField txtTelefono;
     // End of variables declaration//GEN-END:variables
