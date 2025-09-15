@@ -19,12 +19,12 @@ public class Cliente {
     private int telefono;
     private String membresia;
     private int valorMembresia;
-    private String estadoMembresia;
+   
     private String fecha;
     private String estadodePago;
 
 
-    public Cliente(int id, int cedula, String nombre, String direccion, int telefono, String membresia, int valorMembresia, String estadoMembresia, String estadodePago) {
+    public Cliente(int id, int cedula, String nombre, String direccion, int telefono, String membresia, int valorMembresia,  String estadodePago) {
         this.id = id;
         this.nombre = nombre;
         this.direccion = direccion;
@@ -32,7 +32,7 @@ public class Cliente {
         this.telefono = telefono;
         this.membresia = membresia;
         this.valorMembresia = valorMembresia;
-        this.estadoMembresia = estadoMembresia;
+     
         this.estadodePago = estadodePago;
         fecha = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss")
                 .format(Calendar.getInstance().getTime());
@@ -71,9 +71,7 @@ public class Cliente {
         return valorMembresia;
     }
 
-    public String getEstadoMembresia() {
-        return estadoMembresia;
-    }
+  
 
     public String getEstadodePago() {
         return estadodePago;
