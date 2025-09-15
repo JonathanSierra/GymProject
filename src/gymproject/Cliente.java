@@ -12,29 +12,35 @@ import java.util.Calendar;
  * @author xdand
  */
 public class Cliente {
+    private int id;
     private String nombre;
     private String direccion;
     private int cedula;
     private int telefono;
     private String membresia;
     private int valorMembresia;
-    private String estado;
+    private String estadoMembresia;
     private String fecha;
     private String estadodePago;
 
 
-    public Cliente(String nombre, String direccion, int cedula, int telefono, String membresia, int valorMembresia, String estado, String estadodePago) {
+    public Cliente(int id, int cedula, String nombre, String direccion, int telefono, String membresia, int valorMembresia, String estadoMembresia, String estadodePago) {
+        this.id = id;
         this.nombre = nombre;
         this.direccion = direccion;
         this.cedula = cedula;
         this.telefono = telefono;
         this.membresia = membresia;
         this.valorMembresia = valorMembresia;
-        this.estado = estado;
+        this.estadoMembresia = estadoMembresia;
         this.estadodePago = estadodePago;
         fecha = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss")
                 .format(Calendar.getInstance().getTime());
        
+    }
+    
+    public int getId() {
+        return id;
     }
 
     public String getFecha() {
@@ -65,8 +71,8 @@ public class Cliente {
         return valorMembresia;
     }
 
-    public String getEstado() {
-        return estado;
+    public String getEstadoMembresia() {
+        return estadoMembresia;
     }
 
     public String getEstadodePago() {

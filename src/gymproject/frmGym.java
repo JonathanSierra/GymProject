@@ -4,12 +4,15 @@
  */
 package gymproject;
 
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Calendar;
 import javax.swing.table.DefaultTableModel;
 
 /**
  *
- * @author xdand
+ * @author xdand & jonat
  */
 public class frmGym extends javax.swing.JFrame {
 
@@ -20,13 +23,17 @@ public class frmGym extends javax.swing.JFrame {
 
     ArrayList<Cliente> registros;
     ArrayList<Membresia> membresias;
-    String[] actividad={"Cedula","Nombre","Asistencia"};
+    ArrayList<Asistencia> listaAsistencias;
+    private int idContador = 0;
+    String[] actividad={"Id", "Cedula","Nombre","Estado de la Membresia"};
+    String[] asistencias={"Fecha","Id","Cedula","Nombre","Asistió"};
     String[] periodoDepago={"Fecha","Pago"};
-    String[] informacion={"Nombre","Direcion","Cedula","Telefono","Membresia","precio","Asistencia","Estado","indefinido"};
+    String[] informacion={"Id","Cedula","Nombre","Direccion","Telefono","Membresia","precio","Pago","Estado de la Membresia","indefinido"};
     public frmGym(int idUser, int profile, String username) {
         initComponents();
         registros=new ArrayList();
         membresias=new ArrayList();
+        listaAsistencias = new ArrayList();
         
         membresias.add(new Membresia("Mensual",70000));
         membresias.add(new Membresia("Anual",800000));
@@ -59,14 +66,18 @@ public class frmGym extends javax.swing.JFrame {
                 && comboMembresias.getSelectedIndex()>0 && (rbPago.isSelected() || rbEspera.isSelected()))
         {
             int ItemSelecionado=comboMembresias.getSelectedIndex()-1;
+            
+            idContador ++;
+            int id = idContador;
             String nombre=txtNombre.getText().toLowerCase();
-            String direcion=txtDirecion.getText().toLowerCase();
+            String direccion=txtDirecion.getText().toLowerCase();
             int telefono=Integer.parseInt(txtTelefono.getText());
             int cedula=Integer.parseInt(txtCedula.getText());
             String membresia=membresias.get(ItemSelecionado).getMembresia();
             int valorMembresia=membresias.get(ItemSelecionado).getPrecioMembresia();
             String estado="";
-            String asistencia="";
+            String estadoMembresia="";
+            String asistio = "";
             
             if(rbPago.isSelected()){
                 estado="Pago";
@@ -77,14 +88,23 @@ public class frmGym extends javax.swing.JFrame {
             }
             if(rbActivo.isSelected())
             {
-                asistencia="Activo";
+                estadoMembresia="Activo";
             }
             else
             {
-                asistencia="Inactivo";
+                estadoMembresia="Inactivo";
+            }
+            if(rbSi.isSelected())
+            {
+                asistio = "si";
+            }
+            else
+            {
+                asistio = "no";
             }
             
-            registros.add(new Cliente(nombre,direcion,cedula,telefono,membresia,valorMembresia,asistencia,estado));
+            listaAsistencias.add(new Asistencia(id, asistio));
+            registros.add(new Cliente(id, cedula,nombre,direccion,telefono,membresia,valorMembresia,estadoMembresia,estado));
             mostrarInfo();
             txtNombre.setText("");
             txtCedula.setText("");
@@ -105,6 +125,7 @@ public class frmGym extends javax.swing.JFrame {
         for (int i = 0; i < registros.size(); i++) {
             modelo.addRow(new Object[]
             {
+                registros.get(i).getId(),
                 registros.get(i).getNombre(),
                 registros.get(i).getCedula(),
                 registros.get(i).getDireccion(),
@@ -112,7 +133,7 @@ public class frmGym extends javax.swing.JFrame {
                 registros.get(i).getMembresia(),
                 registros.get(i).getValorMembresia(),
                 registros.get(i).getEstadodePago(),
-                registros.get(i).getEstado(),
+                registros.get(i).getEstadoMembresia(),
                 
             });
             
@@ -127,9 +148,10 @@ public class frmGym extends javax.swing.JFrame {
         for (int i = 0; i < registros.size(); i++) {
             modelo.addRow(new Object[]
             {
+                registros.get(i).getId(),
                 registros.get(i).getCedula(),
                 registros.get(i).getNombre(),
-                registros.get(i).getEstado()
+                registros.get(i).getEstadoMembresia()
             });
             
         }
@@ -153,6 +175,31 @@ public class frmGym extends javax.swing.JFrame {
     }
     
     
+    /*Funcion para asistir al gym
+    public void ingresarAlGym(){
+        listaAsistencias.add(new Asistencia(cliente.getId()));
+        
+    }*/
+    
+    //Funcion para mostrar las asistencias en la tabla
+    public void mostrarAsistencias(){
+        DefaultTableModel modelo=new DefaultTableModel();
+        modelo.setColumnIdentifiers(asistencias);
+        for (int i = 0; i < registros.size(); i++) {
+            modelo.addRow(new Object[]
+            {
+                registros.get(i).getFecha(),
+                registros.get(i).getId(),
+                registros.get(i).getCedula(),
+                registros.get(i).getNombre(),
+                listaAsistencias.get(i).GetAsistio()
+            });
+            
+        }
+        tableRegistro.setModel(modelo);
+    }
+    
+    
     
 
     @SuppressWarnings("unchecked")
@@ -169,6 +216,7 @@ public class frmGym extends javax.swing.JFrame {
         jToggleButton1 = new javax.swing.JToggleButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         jTable1 = new javax.swing.JTable();
+        buttonGroup3 = new javax.swing.ButtonGroup();
         jLabel1 = new javax.swing.JLabel();
         txtCedula = new javax.swing.JTextField();
         jLabel2 = new javax.swing.JLabel();
@@ -189,6 +237,12 @@ public class frmGym extends javax.swing.JFrame {
         tableRegistro = new javax.swing.JTable();
         btnAsistencia = new javax.swing.JButton();
         btnPeriodo = new javax.swing.JButton();
+        btnCitas = new javax.swing.JButton();
+        btnAsistencias = new javax.swing.JButton();
+        jLabel7 = new javax.swing.JLabel();
+        rbSi = new javax.swing.JRadioButton();
+        rbNo = new javax.swing.JRadioButton();
+        jLabel8 = new javax.swing.JLabel();
 
         jButton1.setText("jButton1");
 
@@ -248,7 +302,7 @@ public class frmGym extends javax.swing.JFrame {
 
         jLabel5.setText("Estado de pago");
 
-        jLabel6.setText("Asistencia");
+        jLabel6.setText("Estado de la membresia");
 
         buttonGroup1.add(rbPago);
         rbPago.setText("Pago");
@@ -289,59 +343,93 @@ public class frmGym extends javax.swing.JFrame {
             }
         });
 
-        btnPeriodo.setText("periodo de pago");
+        btnPeriodo.setText("Periodo de pago");
         btnPeriodo.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnPeriodoActionPerformed(evt);
             }
         });
 
+        btnCitas.setText("Tipo de membresia");
+
+        btnAsistencias.setText("Asistencias");
+        btnAsistencias.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnAsistenciasActionPerformed(evt);
+            }
+        });
+
+        jLabel7.setText("Asistió");
+
+        buttonGroup3.add(rbSi);
+        rbSi.setText("Si");
+
+        buttonGroup3.add(rbNo);
+        rbNo.setText("No");
+
+        jLabel8.setText("Reportes:");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                    .addComponent(txtNombre, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 112, Short.MAX_VALUE)
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(btnRegistrar, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel2, javax.swing.GroupLayout.Alignment.LEADING)))
-                    .addComponent(txtCedula, javax.swing.GroupLayout.Alignment.LEADING))
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(47, 47, 47)
+                        .addContainerGap()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel2, javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(btnRegistrar, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 125, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                        .addComponent(txtNombre, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 112, Short.MAX_VALUE)
+                        .addComponent(txtCedula, javax.swing.GroupLayout.Alignment.LEADING)))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 45, Short.MAX_VALUE)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(txtTelefono, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel3))
-                        .addGap(30, 30, 30)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(comboMembresias, javax.swing.GroupLayout.PREFERRED_SIZE, 317, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGroup(layout.createSequentialGroup()
-                                .addComponent(jLabel5)
-                                .addGap(44, 44, 44)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(rbActivo)
-                                    .addComponent(jLabel6)
-                                    .addComponent(rbInactivo)))))
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                            .addComponent(btnAsistencia, javax.swing.GroupLayout.PREFERRED_SIZE, 119, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                            .addComponent(btnPeriodo, javax.swing.GroupLayout.PREFERRED_SIZE, 131, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGroup(layout.createSequentialGroup()
-                            .addGap(47, 47, 47)
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(txtDirecion, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(jLabel4))
-                            .addGap(30, 30, 30)
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(rbPago)
-                                .addComponent(rbEspera)))))
-                .addGap(6, 6, 6))
+                                    .addComponent(txtTelefono, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(jLabel3))
+                                .addGap(30, 30, 30)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(comboMembresias, javax.swing.GroupLayout.PREFERRED_SIZE, 317, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addComponent(jLabel5)
+                                        .addGap(44, 44, 44)
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addComponent(jLabel6)
+                                            .addComponent(rbActivo)
+                                            .addComponent(rbInactivo))
+                                        .addGap(18, 18, 18)
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addComponent(rbNo)
+                                            .addComponent(rbSi)
+                                            .addComponent(jLabel7)))))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addComponent(jLabel4)
+                                            .addComponent(txtDirecion, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                        .addGap(30, 30, 30)
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addComponent(rbPago)
+                                            .addComponent(rbEspera)))
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addComponent(btnAsistencia, javax.swing.GroupLayout.PREFERRED_SIZE, 125, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                        .addComponent(btnPeriodo)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                        .addComponent(btnAsistencias, javax.swing.GroupLayout.PREFERRED_SIZE, 99, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(btnCitas)))
+                        .addGap(56, 56, 56))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(18, 18, 18)
+                        .addComponent(jLabel8)
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jScrollPane2)
@@ -365,13 +453,14 @@ public class frmGym extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabel5)
-                            .addComponent(jLabel6))))
+                            .addComponent(jLabel6)
+                            .addComponent(jLabel7))))
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addGap(11, 11, 11)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel4, javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(jLabel2))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel2)
+                            .addComponent(jLabel4))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(txtNombre, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -380,18 +469,29 @@ public class frmGym extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(rbActivo)
-                            .addComponent(rbPago))
+                            .addComponent(rbPago)
+                            .addComponent(rbSi))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(rbInactivo)
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                .addComponent(rbInactivo)
+                                .addComponent(rbNo))
                             .addComponent(rbEspera))))
-                .addGap(20, 20, 20)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(btnRegistrar, javax.swing.GroupLayout.DEFAULT_SIZE, 51, Short.MAX_VALUE)
-                    .addComponent(btnAsistencia, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(btnPeriodo, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 18, Short.MAX_VALUE)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 165, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(18, 18, 18)
+                        .addComponent(btnRegistrar, javax.swing.GroupLayout.PREFERRED_SIZE, 53, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(9, 9, 9)
+                        .addComponent(jLabel8)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(btnAsistencia, javax.swing.GroupLayout.PREFERRED_SIZE, 53, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(btnPeriodo, javax.swing.GroupLayout.PREFERRED_SIZE, 53, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(btnAsistencias, javax.swing.GroupLayout.PREFERRED_SIZE, 53, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(btnCitas, javax.swing.GroupLayout.PREFERRED_SIZE, 53, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                .addGap(18, 18, 18)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 175, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -412,6 +512,11 @@ public class frmGym extends javax.swing.JFrame {
         // TODO add your handling code here:
         periodoDepago();
     }//GEN-LAST:event_btnPeriodoActionPerformed
+
+    private void btnAsistenciasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAsistenciasActionPerformed
+        // TODO add your handling code here:
+        mostrarAsistencias();
+    }//GEN-LAST:event_btnAsistenciasActionPerformed
 
     /**
      * @param args the command line arguments
@@ -450,10 +555,13 @@ public class frmGym extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAsistencia;
+    private javax.swing.JButton btnAsistencias;
+    private javax.swing.JButton btnCitas;
     private javax.swing.JButton btnPeriodo;
     private javax.swing.JButton btnRegistrar;
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.ButtonGroup buttonGroup2;
+    private javax.swing.ButtonGroup buttonGroup3;
     private javax.swing.JComboBox<String> comboMembresias;
     private javax.swing.JButton jButton1;
     private javax.swing.JCheckBox jCheckBox1;
@@ -466,6 +574,8 @@ public class frmGym extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
+    private javax.swing.JLabel jLabel8;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTable jTable1;
@@ -473,7 +583,9 @@ public class frmGym extends javax.swing.JFrame {
     private javax.swing.JRadioButton rbActivo;
     private javax.swing.JRadioButton rbEspera;
     private javax.swing.JRadioButton rbInactivo;
+    private javax.swing.JRadioButton rbNo;
     private javax.swing.JRadioButton rbPago;
+    private javax.swing.JRadioButton rbSi;
     private javax.swing.JTable tableRegistro;
     private javax.swing.JTextField txtCedula;
     private javax.swing.JTextField txtDirecion;
