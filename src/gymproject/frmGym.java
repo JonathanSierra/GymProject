@@ -4,6 +4,9 @@
  */
 package gymproject;
 
+import Objetos.Membresia;
+import Objetos.Estado;
+import Objetos.Asistencia;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.ArrayList;
