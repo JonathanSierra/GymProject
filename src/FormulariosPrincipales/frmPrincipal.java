@@ -12,6 +12,7 @@ import Objetos.Asistencia;
 import Objetos.Estado;
 import Objetos.Membresia;
 import Objetos.Cliente;
+import Objetos.dbConnection;
 import java.util.ArrayList;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
@@ -30,6 +31,8 @@ public class frmPrincipal extends javax.swing.JFrame {
     private ArrayList<Cliente> registros = new ArrayList();
     public frmPrincipal(int idUser, int profile, String username) {
         initComponents();
+        dbConnection dbc = new dbConnection();
+        dbc.conectar();
         
     }
 
@@ -48,10 +51,12 @@ public class frmPrincipal extends javax.swing.JFrame {
         principalDeskpot = new javax.swing.JDesktopPane();
         menuRegistro = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
-        jMenuItem1 = new javax.swing.JMenuItem();
         menuEstado = new javax.swing.JMenuItem();
         menuPago = new javax.swing.JMenuItem();
         menuAsistencia = new javax.swing.JMenuItem();
+        jMenu3 = new javax.swing.JMenu();
+        menuMiembros = new javax.swing.JMenuItem();
+        menuInstructores = new javax.swing.JMenuItem();
         jMenu2 = new javax.swing.JMenu();
 
         jScrollPane1.setViewportView(jTextPane1);
@@ -63,22 +68,14 @@ public class frmPrincipal extends javax.swing.JFrame {
         principalDeskpot.setLayout(principalDeskpotLayout);
         principalDeskpotLayout.setHorizontalGroup(
             principalDeskpotLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 517, Short.MAX_VALUE)
+            .addGap(0, 1048, Short.MAX_VALUE)
         );
         principalDeskpotLayout.setVerticalGroup(
             principalDeskpotLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 298, Short.MAX_VALUE)
+            .addGap(0, 528, Short.MAX_VALUE)
         );
 
         jMenu1.setText("Reportes");
-
-        jMenuItem1.setText("Registrar");
-        jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jMenuItem1ActionPerformed(evt);
-            }
-        });
-        jMenu1.add(jMenuItem1);
 
         menuEstado.setText("Activo/Inactivo");
         menuEstado.addActionListener(new java.awt.event.ActionListener() {
@@ -106,6 +103,21 @@ public class frmPrincipal extends javax.swing.JFrame {
 
         menuRegistro.add(jMenu1);
 
+        jMenu3.setText("Registros");
+
+        menuMiembros.setText("Registrar Miembro");
+        menuMiembros.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                menuMiembrosActionPerformed(evt);
+            }
+        });
+        jMenu3.add(menuMiembros);
+
+        menuInstructores.setText("Registrar Instructor");
+        jMenu3.add(menuInstructores);
+
+        menuRegistro.add(jMenu3);
+
         jMenu2.setText("Edit");
         menuRegistro.add(jMenu2);
 
@@ -132,12 +144,12 @@ public class frmPrincipal extends javax.swing.JFrame {
         estado.show();
     }//GEN-LAST:event_menuEstadoActionPerformed
 
-    private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
+    private void menuMiembrosActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuMiembrosActionPerformed
         // TODO add your handling code here:
         JiFrmRegistro registro=new JiFrmRegistro(registros);
         principalDeskpot.add(registro);
         registro.show();
-    }//GEN-LAST:event_jMenuItem1ActionPerformed
+    }//GEN-LAST:event_menuMiembrosActionPerformed
 
     private void menuPagoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuPagoActionPerformed
         // TODO add your handling code here:
@@ -193,11 +205,13 @@ public class frmPrincipal extends javax.swing.JFrame {
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu2;
-    private javax.swing.JMenuItem jMenuItem1;
+    private javax.swing.JMenu jMenu3;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTextPane jTextPane1;
     private javax.swing.JMenuItem menuAsistencia;
     private javax.swing.JMenuItem menuEstado;
+    private javax.swing.JMenuItem menuInstructores;
+    private javax.swing.JMenuItem menuMiembros;
     private javax.swing.JMenuItem menuPago;
     private javax.swing.JMenuBar menuRegistro;
     private javax.swing.JDesktopPane principalDeskpot;
