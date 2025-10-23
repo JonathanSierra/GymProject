@@ -30,10 +30,7 @@ public class frmPrincipal extends javax.swing.JFrame {
     
     private ArrayList<Cliente> registros = new ArrayList();
     public frmPrincipal(int idUser, int profile, String username) {
-        initComponents();
-        dbConnection dbc = new dbConnection();
-        dbc.conectar();
-        
+        initComponents();  
     }
 
     /**
@@ -50,14 +47,13 @@ public class frmPrincipal extends javax.swing.JFrame {
         buttonGroup1 = new javax.swing.ButtonGroup();
         principalDeskpot = new javax.swing.JDesktopPane();
         menuRegistro = new javax.swing.JMenuBar();
+        jMenu3 = new javax.swing.JMenu();
+        menuMiembros = new javax.swing.JMenuItem();
+        menuMembresias = new javax.swing.JMenuItem();
         jMenu1 = new javax.swing.JMenu();
         menuEstado = new javax.swing.JMenuItem();
         menuPago = new javax.swing.JMenuItem();
         menuAsistencia = new javax.swing.JMenuItem();
-        jMenu3 = new javax.swing.JMenu();
-        menuMiembros = new javax.swing.JMenuItem();
-        menuInstructores = new javax.swing.JMenuItem();
-        jMenu2 = new javax.swing.JMenu();
 
         jScrollPane1.setViewportView(jTextPane1);
 
@@ -72,8 +68,23 @@ public class frmPrincipal extends javax.swing.JFrame {
         );
         principalDeskpotLayout.setVerticalGroup(
             principalDeskpotLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 528, Short.MAX_VALUE)
+            .addGap(0, 530, Short.MAX_VALUE)
         );
+
+        jMenu3.setText("Registros");
+
+        menuMiembros.setText("Registrar Miembro");
+        menuMiembros.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                menuMiembrosActionPerformed(evt);
+            }
+        });
+        jMenu3.add(menuMiembros);
+
+        menuMembresias.setText("Registrar Membresia");
+        jMenu3.add(menuMembresias);
+
+        menuRegistro.add(jMenu3);
 
         jMenu1.setText("Reportes");
 
@@ -102,24 +113,6 @@ public class frmPrincipal extends javax.swing.JFrame {
         jMenu1.add(menuAsistencia);
 
         menuRegistro.add(jMenu1);
-
-        jMenu3.setText("Registros");
-
-        menuMiembros.setText("Registrar Miembro");
-        menuMiembros.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                menuMiembrosActionPerformed(evt);
-            }
-        });
-        jMenu3.add(menuMiembros);
-
-        menuInstructores.setText("Registrar Instructor");
-        jMenu3.add(menuInstructores);
-
-        menuRegistro.add(jMenu3);
-
-        jMenu2.setText("Edit");
-        menuRegistro.add(jMenu2);
 
         setJMenuBar(menuRegistro);
 
@@ -204,13 +197,12 @@ public class frmPrincipal extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JMenu jMenu1;
-    private javax.swing.JMenu jMenu2;
     private javax.swing.JMenu jMenu3;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTextPane jTextPane1;
     private javax.swing.JMenuItem menuAsistencia;
     private javax.swing.JMenuItem menuEstado;
-    private javax.swing.JMenuItem menuInstructores;
+    private javax.swing.JMenuItem menuMembresias;
     private javax.swing.JMenuItem menuMiembros;
     private javax.swing.JMenuItem menuPago;
     private javax.swing.JMenuBar menuRegistro;

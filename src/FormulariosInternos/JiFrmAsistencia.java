@@ -6,9 +6,18 @@ package FormulariosInternos;
 
 import Objetos.Asistencia;
 import Objetos.Cliente;
+import Objetos.dbConnection;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 
@@ -21,112 +30,83 @@ public class JiFrmAsistencia extends javax.swing.JInternalFrame {
     /**
      * Creates new form JiFrmAsistencia
      */
-    String[] asistencias={"ID","Cecdula","Nombre","Entrada","Salida"};
+    dbConnection conexion;
     ArrayList<Cliente> registros;
     ArrayList<Asistencia> asistenciass;
     public JiFrmAsistencia(ArrayList<Cliente> registros) {
         initComponents();
+        conexion=new dbConnection();
         this.asistenciass=new ArrayList();
         this.registros=registros;
-        llenarMiembros();
-        mostrarAsistencias();
-        
-       
+        txtID.setText("");
+        mostrarInfo();
+
     }
-    public void llenarMiembros()
-    {
-        comboMiembros.removeAllItems();
-        comboMiembros.addItem("Seleccione un miembro");
-        for (int i = 0; i < registros.size(); i++) {
-            comboMiembros.addItem(registros.get(i).getNombre());
-        }
-    }
+   
    public void entrada() {
-    int item = comboMiembros.getSelectedIndex() - 1;
-
-    if (comboMiembros.getSelectedIndex() > 0) {
-        Cliente cliente = registros.get(item);
-
-        if (!cliente.getEstadodePago().equalsIgnoreCase("pendiente")) {
-         
-            boolean dentro = false;
-            for (int i=0;i<asistenciass.size();i++) {
-                if (asistenciass.get(i).getCliente().getId() == cliente.getId() 
-                        && asistenciass.get(i).getFechaSalida().isEmpty()
-                        || asistenciass.get(i).getFechaSalida().equalsIgnoreCase("")) {
-                    dentro = true;
-                    break;
-                }
-            }
-
-            if (dentro) {
-                JOptionPane.showMessageDialog(rootPane, "El miembro ya está adentro");
-            } else {
-                // Crear nueva asistencia (solo entrada, sin salida)
-                Asistencia nueva = new Asistencia(cliente); 
-                asistenciass.add(nueva);
-                mostrarAsistencias();
-            }
-        } else {
-            JOptionPane.showMessageDialog(rootPane,
-                "Este miembro no puede entrar porque todavía no ha pagado");
+       try(Connection con = DriverManager.getConnection(conexion.getUrl(),conexion.getUsername(), conexion.getPassword()))
+        {
+            int id=Integer.parseInt(txtID.getText());
+            PreparedStatement pstm = con.prepareCall("call RegistrarEntrada(?)");
+            pstm.setInt(1,id);
+            pstm.executeQuery();
+            mostrarInfo();
+        }catch(SQLException e){
+            JOptionPane.showMessageDialog(rootPane, e.toString());
         }
-    }
+    
 }
    
    public void salida() {
-    int item = comboMiembros.getSelectedIndex() - 1;
-
-    if (comboMiembros.getSelectedIndex() > 0) {
-        Cliente cliente = registros.get(item);
-
-        boolean dentro = false;
-        for (int i = 0; i < asistenciass.size(); i++) {
-            
-
-            if ( asistenciass.get(i).getCliente().getId() == cliente.getId()) {
-                if ( asistenciass.get(i).getFechaSalida().isEmpty()) { 
-                    
-                    String fecha = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss")
-                            .format(Calendar.getInstance().getTime());
-                     asistenciass.get(i).setFechaSalida(fecha);
-                    mostrarAsistencias();
-                    dentro = true;
-                    break;
-                }
-            }
-        }
-
-        if (!dentro) {
-            JOptionPane.showMessageDialog(rootPane, 
-                "Este miembro no ha entrado o ya salió");
+       try(Connection con = DriverManager.getConnection(conexion.getUrl(),conexion.getUsername(), conexion.getPassword()))
+        {
+            int id=Integer.parseInt(txtID.getText());
+            PreparedStatement pstm = con.prepareCall("call RegistrarSalida(?)");
+            pstm.setInt(1,id);
+            pstm.executeQuery();
+            mostrarInfo();
+        }catch(SQLException e){
+            JOptionPane.showMessageDialog(rootPane, e.toString());
         }
     }
-}
+   
+   public void mostrarInfo(){
+        try(Connection con = DriverManager.getConnection(conexion.getUrl(),
+                conexion.getUsername(), conexion.getPassword())){
+            
+            DefaultTableModel modelo = new DefaultTableModel();
+            
+            Statement stm = con.createStatement();
+            
+            String query = "call mostrarAsistencias()";
+            ResultSet rs = stm.executeQuery(query);
+            ResultSetMetaData rsmt = rs.getMetaData();
+            
+            for(int i = 1; i<=rsmt.getColumnCount(); i++){
+                modelo.addColumn(rsmt.getColumnLabel(i));
+            }
+            
+            while(rs.next()){
+                Object[] filas = new Object[rsmt.getColumnCount()];
+                for(int i = 1; i<=rsmt.getColumnCount(); i++){
+                    filas[i-1] = rs.getObject(i);
+                }
+                modelo.addRow(filas);
+            }
+            tableAsistencias.setModel(modelo);
+            
+            
+    }catch(SQLException e){
+            JOptionPane.showMessageDialog(rootPane, e.toString());
+        }
+    }
+   
+   
         
     
 
     
-     public void mostrarAsistencias(){
-        DefaultTableModel modelo=new DefaultTableModel();
-        modelo.setColumnIdentifiers(asistencias);
-        for (int i = 0; i < asistenciass.size(); i++) {
-            modelo.addRow(new Object[]
-            {
-                
-                asistenciass.get(i).getCliente().getId(),
-                asistenciass.get(i).getCliente().getCedula(),
-                asistenciass.get(i).getCliente().getNombre(),
-                asistenciass.get(i).getFecha(),
-                asistenciass.get(i).getFechaSalida()
-               
-                
-               
-            });
-            
-        }
-        tableAsistencias.setModel(modelo);
-    }
+     
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -139,9 +119,10 @@ public class JiFrmAsistencia extends javax.swing.JInternalFrame {
 
         jScrollPane1 = new javax.swing.JScrollPane();
         tableAsistencias = new javax.swing.JTable();
-        comboMiembros = new javax.swing.JComboBox<>();
         jButton1 = new javax.swing.JButton();
         jButton2 = new javax.swing.JButton();
+        txtID = new javax.swing.JTextField();
+        jLabel1 = new javax.swing.JLabel();
 
         setClosable(true);
         setIconifiable(true);
@@ -160,8 +141,6 @@ public class JiFrmAsistencia extends javax.swing.JInternalFrame {
         ));
         jScrollPane1.setViewportView(tableAsistencias);
 
-        comboMiembros.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-
         jButton1.setText("Entrada");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -176,31 +155,38 @@ public class JiFrmAsistencia extends javax.swing.JInternalFrame {
             }
         });
 
+        txtID.setText("jTextField1");
+
+        jLabel1.setText("Escriba el ID:");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 570, Short.MAX_VALUE)
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 659, Short.MAX_VALUE)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(comboMiembros, javax.swing.GroupLayout.PREFERRED_SIZE, 145, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(txtID, javax.swing.GroupLayout.PREFERRED_SIZE, 103, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 75, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
-                        .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jLabel1))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addGap(76, 76, 76)
-                .addComponent(comboMiembros, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(28, 28, 28)
+                .addGap(52, 52, 52)
+                .addComponent(jLabel1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(txtID, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(32, 32, 32)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 43, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 43, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 47, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 14, Short.MAX_VALUE)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 207, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
@@ -220,10 +206,11 @@ public class JiFrmAsistencia extends javax.swing.JInternalFrame {
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JComboBox<String> comboMiembros;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTable tableAsistencias;
+    private javax.swing.JTextField txtID;
     // End of variables declaration//GEN-END:variables
 }

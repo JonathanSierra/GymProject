@@ -9,12 +9,20 @@ package Objetos;
  * @author xdand
  */
 public class Membresia {
+    private int idMembresia;
     private String membresia;
     private int PrecioMembresia;
+    private int membresiaDuracion;
 
-    public Membresia(String membresia, int PrecioMembresia) {
+    public Membresia(int idMembresia, String membresia, int PrecioMembresia, int membresiaDuracion) {
+        this.idMembresia = idMembresia;
         this.membresia = membresia;
         this.PrecioMembresia = PrecioMembresia;
+        this.membresiaDuracion = membresiaDuracion;
+    }
+
+    public int getIdMembresia() {
+        return idMembresia;
     }
 
     public String getMembresia() {
@@ -24,6 +32,16 @@ public class Membresia {
     public int getPrecioMembresia() {
         return PrecioMembresia;
     }
+
+    public int getMembresiaDuracion() {
+        return membresiaDuracion;
+    }
+    
+    
+
+    
+
+   
 
    
     

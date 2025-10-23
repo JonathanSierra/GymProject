@@ -8,7 +8,16 @@ import Objetos.Asistencia;
 import Objetos.Cliente;
 import Objetos.Estado;
 import Objetos.Membresia;
+import Objetos.dbConnection;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 
@@ -25,131 +34,80 @@ public class JiFrmRegistro extends javax.swing.JInternalFrame {
    
     ArrayList<Cliente> registros;
     ArrayList<Membresia> membresias;
-    private int idContador = 0;
-    String[] informacion={"ID","Cedula","Nombre","Direccion","Telefono","Membresia","precio","Pago","Estado de la Membresia",};
+    dbConnection conexion;
     public JiFrmRegistro(ArrayList<Cliente> registros) {
         initComponents();
+        conexion=new dbConnection();
         this.registros=registros;
         membresias=new ArrayList();
-        //Cliente cliente1 = new Cliente(1, 1084451180 , "Jonathan", "Calle 6 13-82", 3024267778 ,"Mensual" , 70000 , "Pago", "Activo");
-        membresias.add(new Membresia("Mensual",70000));
-        membresias.add(new Membresia("Anual",800000));
-        
         txtNombre.setText("");
         txtCedula.setText("");
         txtTelefono.setText("");
         txtDirecion.setText("");
+        txtApellido.setText("");
         llenarCombo();
-        mostrarInfo();
+      
     }
    
-    public void llenarCombo()
-    {
-        
-        comboMembresias.removeAllItems();
-        comboMembresias.addItem("Seleccione una membresia");
-        for (int i = 0; i < membresias.size(); i++) {
-            comboMembresias.addItem(membresias.get(i).getMembresia());
+    public void llenarCombo(){
+        try(Connection con = DriverManager.getConnection(conexion.getUrl(),
+                conexion.getUsername(), conexion.getPassword())){
+            comboMembresias.removeAllItems();
+            comboMembresias.addItem("Seleccione");
+            membresias.clear();
+            Statement stm = con.createStatement();
+            String query ="call comboMembresias()";
+            ResultSet rs = stm.executeQuery(query);
+            
+            while(rs.next()){
+                String nombre = rs.getString("mensualidad_name");
+                int id = rs.getInt("id_mensualidad");
+                int precio =rs.getInt("mensualidad_precio");
+                int duracion=rs.getInt("mensualidad_duracion");
+                membresias.add(new Membresia(id, nombre,precio,duracion));
+                comboMembresias.addItem(nombre);
+            }
+            
+        }catch(SQLException e){
             
         }
-        
     }
     
-    /*public void llenarFiltros()
-    {
-        comboFiltros.removeAllItems();
-        comboFiltros.addItem("Sin filtros");
-        comboFiltros.addItem("Id");
-        comboFiltros.addItem("Cedula");
-        comboFiltros.addItem("Nombre");
-    }*/
+    
+ 
     
     /*Para registrar los usuarios bro*/
     public void guardarInfo()
     {
-        try
+        try(Connection con = DriverManager.getConnection(conexion.getUrl(),conexion.getUsername(), conexion.getPassword()))
         {
-        if(!txtNombre.getText().isEmpty() && !txtCedula.getText().isEmpty()
-                && !txtTelefono.getText().isEmpty() && !txtDirecion.getText().isEmpty()
-                && comboMembresias.getSelectedIndex()>0 && (rbPago.isSelected() || rbEspera.isSelected()))
-        {
-            int ItemSelecionado=comboMembresias.getSelectedIndex()-1;
+            int posCombo = comboMembresias.getSelectedIndex()-1;
+            int cedula= Integer.parseInt(txtCedula.getText());
+            String fechaNacimiento;
+            Date fecha = dateFechaNacimiento.getDate();
+            fechaNacimiento = new SimpleDateFormat("yyyy-MM-dd").format(fecha);
+            PreparedStatement pstm = con.prepareCall("call RegistrarMiembro(?,?,?,?,?,?)");
             
-            idContador ++;
-            int id = idContador;
-            String nombre=txtNombre.getText().toLowerCase();
-            String direccion=txtDirecion.getText().toLowerCase();
-            int telefono=Integer.parseInt(txtTelefono.getText());
-            int cedula=Integer.parseInt(txtCedula.getText());
-            String membresia=membresias.get(ItemSelecionado).getMembresia();
-            int valorMembresia=membresias.get(ItemSelecionado).getPrecioMembresia();
-            String estadoDePago="";
-            String estadoDeMembresia="Activo";
-            String asistio = "";
-           
+            pstm.setInt(1, cedula);
+            pstm.setString(2, txtNombre.getText());
+            pstm.setString(3,txtApellido.getText());
+            pstm.setString(4, txtTelefono.getText());
+            pstm.setString(5,fechaNacimiento);
+            pstm.setInt(6,membresias.get(posCombo).getIdMembresia());
+            pstm.executeQuery();
             
-            if(rbPago.isSelected()){
-                estadoDePago="Pago";
-            }
-            else
-            {
-                estadoDePago="Pendiente";
-            }
-         
+            JOptionPane.showMessageDialog(rootPane, "Datos Guardados correctamente");
             
-            registros.add(new Cliente(id, cedula,nombre,direccion,telefono,membresia,valorMembresia,estadoDeMembresia,estadoDePago));
-            JOptionPane.showMessageDialog(rootPane, 
-                    "Miembro registrado con exito");
-            mostrarInfo();
-            txtNombre.setText("");
-            txtCedula.setText("");
-            txtTelefono.setText("");
-            txtDirecion.setText("");
             
-        }
-        else
-        {
-            JOptionPane.showMessageDialog(rootPane, 
-                    "Faltan campos por completar");
-        }
-        } catch(Exception e){
-                        JOptionPane.showMessageDialog(rootPane, 
-                    "Error al ingresar el miembro, Intenta de nuevo");
+        }catch(SQLException e){
+            JOptionPane.showMessageDialog(rootPane, e.toString());
         }
     }
     
  
     
     
-    /*Para mostrar la informacion de cuando se registran por si no sabes*/
-    public void mostrarInfo()
-    {
-        DefaultTableModel modelo=new DefaultTableModel();
-        modelo.setColumnIdentifiers(informacion);
-        for (int i = 0; i < registros.size(); i++) {
-            modelo.addRow(new Object[]
-            {
-                //{"ID","Cedula","Nombre","Direccion","Telefono","Membresia","precio","Pago","Estado de la Membresia",};
-                registros.get(i).getId(),
-                registros.get(i).getCedula(),
-                registros.get(i).getNombre(),
-                registros.get(i).getDireccion(),
-                registros.get(i).getTelefono(),
-                registros.get(i).getMembresia(),
-                registros.get(i).getValorMembresia(),
-                registros.get(i).getEstadodePago(),
-                registros.get(i).getEstadoMembresia()
-              
-                
-            });
-            
-            
-        }
-        tableRegistro.setModel(modelo);
-       
-    }
-
-
+ 
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -160,44 +118,27 @@ public class JiFrmRegistro extends javax.swing.JInternalFrame {
     private void initComponents() {
 
         buttonGroup1 = new javax.swing.ButtonGroup();
-        rbEspera = new javax.swing.JRadioButton();
         jLabel1 = new javax.swing.JLabel();
-        jScrollPane2 = new javax.swing.JScrollPane();
-        tableRegistro = new javax.swing.JTable();
         txtNombre = new javax.swing.JTextField();
         jLabel2 = new javax.swing.JLabel();
         btnRegistrar = new javax.swing.JButton();
         txtCedula = new javax.swing.JTextField();
-        jLabel5 = new javax.swing.JLabel();
         comboMembresias = new javax.swing.JComboBox<>();
         jLabel3 = new javax.swing.JLabel();
         txtDirecion = new javax.swing.JTextField();
         jLabel4 = new javax.swing.JLabel();
         txtTelefono = new javax.swing.JTextField();
-        rbPago = new javax.swing.JRadioButton();
+        txtApellido = new javax.swing.JTextField();
+        jLabel6 = new javax.swing.JLabel();
+        dateFechaNacimiento = new com.toedter.calendar.JDateChooser();
+        jLabel5 = new javax.swing.JLabel();
 
         setClosable(true);
         setIconifiable(true);
         setMaximizable(true);
         setResizable(true);
 
-        buttonGroup1.add(rbEspera);
-        rbEspera.setText("Espera");
-
         jLabel1.setText("Nombre:");
-
-        tableRegistro.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
-            },
-            new String [] {
-                "Title 1", "Title 2", "Title 3", "Title 4"
-            }
-        ));
-        jScrollPane2.setViewportView(tableRegistro);
 
         txtNombre.setText("jTextField1");
 
@@ -212,10 +153,6 @@ public class JiFrmRegistro extends javax.swing.JInternalFrame {
 
         txtCedula.setText("jTextField1");
 
-        jLabel5.setBackground(new java.awt.Color(0, 0, 0));
-        jLabel5.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel5.setText("Estado de pago:");
-
         comboMembresias.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
         jLabel3.setText("Direccion:");
@@ -226,39 +163,45 @@ public class JiFrmRegistro extends javax.swing.JInternalFrame {
 
         txtTelefono.setText("jTextField1");
 
-        buttonGroup1.add(rbPago);
-        rbPago.setText("Pago");
+        jLabel6.setText("Apellido:");
+
+        jLabel5.setText("Fecha de nacimiento:");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                    .addComponent(txtApellido, javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                         .addContainerGap()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel1)
                             .addComponent(jLabel3)))
-                    .addComponent(txtNombre, javax.swing.GroupLayout.DEFAULT_SIZE, 93, Short.MAX_VALUE)
-                    .addComponent(txtDirecion))
+                    .addComponent(txtNombre, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 93, Short.MAX_VALUE)
+                    .addComponent(txtDirecion, javax.swing.GroupLayout.Alignment.LEADING))
                 .addGap(31, 31, 31)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(txtCedula, javax.swing.GroupLayout.PREFERRED_SIZE, 83, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel2)
-                    .addComponent(jLabel4)
-                    .addComponent(txtTelefono, javax.swing.GroupLayout.PREFERRED_SIZE, 83, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 98, Short.MAX_VALUE)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(comboMembresias, javax.swing.GroupLayout.PREFERRED_SIZE, 160, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnRegistrar, javax.swing.GroupLayout.PREFERRED_SIZE, 114, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(41, 41, 41)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel5)
-                    .addComponent(rbEspera)
-                    .addComponent(rbPago))
-                .addGap(59, 59, 59))
-            .addComponent(jScrollPane2)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(txtCedula, javax.swing.GroupLayout.PREFERRED_SIZE, 83, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel2)
+                            .addComponent(jLabel4)
+                            .addComponent(txtTelefono, javax.swing.GroupLayout.PREFERRED_SIZE, 83, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 98, Short.MAX_VALUE)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(comboMembresias, javax.swing.GroupLayout.PREFERRED_SIZE, 160, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(btnRegistrar, javax.swing.GroupLayout.PREFERRED_SIZE, 114, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(185, 185, 185))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel5)
+                            .addComponent(dateFechaNacimiento, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -283,20 +226,21 @@ public class JiFrmRegistro extends javax.swing.JInternalFrame {
                             .addComponent(txtTelefono, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                     .addGroup(layout.createSequentialGroup()
                         .addContainerGap()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(comboMembresias, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel5))
-                        .addGap(3, 3, 3)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(rbPago)
-                            .addGroup(layout.createSequentialGroup()
-                                .addGap(28, 28, 28)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(btnRegistrar, javax.swing.GroupLayout.PREFERRED_SIZE, 46, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(rbEspera))))))
+                        .addComponent(comboMembresias, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(31, 31, 31)
+                        .addComponent(btnRegistrar, javax.swing.GroupLayout.PREFERRED_SIZE, 46, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addGap(18, 18, 18)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 164, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel6)
+                    .addComponent(jLabel5))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(9, 9, 9)
+                        .addComponent(txtApellido, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(dateFechaNacimiento, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(121, Short.MAX_VALUE))
         );
 
         pack();
@@ -312,15 +256,14 @@ public class JiFrmRegistro extends javax.swing.JInternalFrame {
     private javax.swing.JButton btnRegistrar;
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JComboBox<String> comboMembresias;
+    private com.toedter.calendar.JDateChooser dateFechaNacimiento;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
-    private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JRadioButton rbEspera;
-    private javax.swing.JRadioButton rbPago;
-    private javax.swing.JTable tableRegistro;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JTextField txtApellido;
     private javax.swing.JTextField txtCedula;
     private javax.swing.JTextField txtDirecion;
     private javax.swing.JTextField txtNombre;
