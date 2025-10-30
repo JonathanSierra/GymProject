@@ -4,10 +4,13 @@
  */
 package FormulariosPrincipales;
 
-import FormulariosInternos.JiFrmAsistencia;
+import FormulariosInternos.JiFrmRegistrarAsistencia;
 import FormulariosInternos.JiFrmEstadoMembresia;
-import FormulariosInternos.JiFrmPeriodoPago;
+import FormulariosInternos.JiFrmRegistrarMembresia;
+import FormulariosInternos.JiFrmRegistrarPago;
 import FormulariosInternos.JiFrmRegistro;
+import FormulariosInternos.JiFrmReportesAsistencias;
+import FormulariosInternos.JiFrmReportesMembresias;
 import Objetos.Asistencia;
 import Objetos.Estado;
 import Objetos.Membresia;
@@ -49,11 +52,13 @@ public class frmPrincipal extends javax.swing.JFrame {
         menuRegistro = new javax.swing.JMenuBar();
         jMenu3 = new javax.swing.JMenu();
         menuMiembros = new javax.swing.JMenuItem();
-        menuMembresias = new javax.swing.JMenuItem();
+        menuAsistencia = new javax.swing.JMenuItem();
+        menuPago = new javax.swing.JMenuItem();
+        menuRegistrarMembresia = new javax.swing.JMenuItem();
         jMenu1 = new javax.swing.JMenu();
         menuEstado = new javax.swing.JMenuItem();
-        menuPago = new javax.swing.JMenuItem();
-        menuAsistencia = new javax.swing.JMenuItem();
+        menuRasistencias = new javax.swing.JMenuItem();
+        menuTipoMembresia = new javax.swing.JMenuItem();
 
         jScrollPane1.setViewportView(jTextPane1);
 
@@ -64,11 +69,11 @@ public class frmPrincipal extends javax.swing.JFrame {
         principalDeskpot.setLayout(principalDeskpotLayout);
         principalDeskpotLayout.setHorizontalGroup(
             principalDeskpotLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 1048, Short.MAX_VALUE)
+            .addGap(0, 760, Short.MAX_VALUE)
         );
         principalDeskpotLayout.setVerticalGroup(
             principalDeskpotLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 530, Short.MAX_VALUE)
+            .addGap(0, 556, Short.MAX_VALUE)
         );
 
         jMenu3.setText("Registros");
@@ -81,8 +86,29 @@ public class frmPrincipal extends javax.swing.JFrame {
         });
         jMenu3.add(menuMiembros);
 
-        menuMembresias.setText("Registrar Membresia");
-        jMenu3.add(menuMembresias);
+        menuAsistencia.setText("Registrar Asistencia");
+        menuAsistencia.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                menuAsistenciaActionPerformed(evt);
+            }
+        });
+        jMenu3.add(menuAsistencia);
+
+        menuPago.setText("Registrar Pago");
+        menuPago.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                menuPagoActionPerformed(evt);
+            }
+        });
+        jMenu3.add(menuPago);
+
+        menuRegistrarMembresia.setText("Registrar Membresia");
+        menuRegistrarMembresia.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                menuRegistrarMembresiaActionPerformed(evt);
+            }
+        });
+        jMenu3.add(menuRegistrarMembresia);
 
         menuRegistro.add(jMenu3);
 
@@ -96,21 +122,21 @@ public class frmPrincipal extends javax.swing.JFrame {
         });
         jMenu1.add(menuEstado);
 
-        menuPago.setText("Periodo de pago");
-        menuPago.addActionListener(new java.awt.event.ActionListener() {
+        menuRasistencias.setText("Reporte de asistencias");
+        menuRasistencias.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                menuPagoActionPerformed(evt);
+                menuRasistenciasActionPerformed(evt);
             }
         });
-        jMenu1.add(menuPago);
+        jMenu1.add(menuRasistencias);
 
-        menuAsistencia.setText("Asistencia");
-        menuAsistencia.addActionListener(new java.awt.event.ActionListener() {
+        menuTipoMembresia.setText("Tipo de membresias");
+        menuTipoMembresia.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                menuAsistenciaActionPerformed(evt);
+                menuTipoMembresiaActionPerformed(evt);
             }
         });
-        jMenu1.add(menuAsistencia);
+        jMenu1.add(menuTipoMembresia);
 
         menuRegistro.add(jMenu1);
 
@@ -146,7 +172,7 @@ public class frmPrincipal extends javax.swing.JFrame {
 
     private void menuPagoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuPagoActionPerformed
         // TODO add your handling code here:
-        JiFrmPeriodoPago pago =new JiFrmPeriodoPago(registros);
+        JiFrmRegistrarPago pago =new JiFrmRegistrarPago(registros);
         principalDeskpot.add(pago);
         pago.show();
         
@@ -154,10 +180,30 @@ public class frmPrincipal extends javax.swing.JFrame {
 
     private void menuAsistenciaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuAsistenciaActionPerformed
         // TODO add your handling code here:
-        JiFrmAsistencia asistencia =new JiFrmAsistencia(registros);
+        JiFrmRegistrarAsistencia asistencia =new JiFrmRegistrarAsistencia(registros);
         principalDeskpot.add(asistencia);
         asistencia.show();
     }//GEN-LAST:event_menuAsistenciaActionPerformed
+
+    private void menuRasistenciasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuRasistenciasActionPerformed
+        // TODO add your handling code here:
+        JiFrmReportesAsistencias Rasistencias=new JiFrmReportesAsistencias();
+        principalDeskpot.add(Rasistencias);
+        Rasistencias.show();
+    }//GEN-LAST:event_menuRasistenciasActionPerformed
+
+    private void menuTipoMembresiaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuTipoMembresiaActionPerformed
+        // TODO add your handling code here:
+        JiFrmReportesMembresias membresias=new JiFrmReportesMembresias();
+         principalDeskpot.add(membresias);
+        membresias.show();
+    }//GEN-LAST:event_menuTipoMembresiaActionPerformed
+
+    private void menuRegistrarMembresiaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuRegistrarMembresiaActionPerformed
+        JiFrmRegistrarMembresia Rmembresia =new JiFrmRegistrarMembresia();
+        principalDeskpot.add(Rmembresia);
+        Rmembresia.show();
+    }//GEN-LAST:event_menuRegistrarMembresiaActionPerformed
 
     /**
      * @param args the command line arguments
@@ -202,10 +248,12 @@ public class frmPrincipal extends javax.swing.JFrame {
     private javax.swing.JTextPane jTextPane1;
     private javax.swing.JMenuItem menuAsistencia;
     private javax.swing.JMenuItem menuEstado;
-    private javax.swing.JMenuItem menuMembresias;
     private javax.swing.JMenuItem menuMiembros;
     private javax.swing.JMenuItem menuPago;
+    private javax.swing.JMenuItem menuRasistencias;
+    private javax.swing.JMenuItem menuRegistrarMembresia;
     private javax.swing.JMenuBar menuRegistro;
+    private javax.swing.JMenuItem menuTipoMembresia;
     private javax.swing.JDesktopPane principalDeskpot;
     // End of variables declaration//GEN-END:variables
 }

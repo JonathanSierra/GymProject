@@ -12,20 +12,18 @@ package Objetos;
  */
 public class Estado {
     private String estado;
-    private Cliente cliente;
+
 
     public Estado(String estado, Cliente cliente) {
         this.estado = estado;
-        this.cliente = cliente;
+      
     }
 
     public String getEstado() {
         return estado;
     }
 
-    public Cliente getCliente() {
-        return cliente;
-    }
+    
     
 
     

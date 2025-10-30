@@ -4,8 +4,7 @@
  */
 package FormulariosInternos;
 
-import Objetos.Cliente;
-import Objetos.Estado;
+import Objetos.Membresia;
 import Objetos.dbConnection;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -14,52 +13,60 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 
 /**
  *
- * @author xdand
+ * @author Arce
  */
-public class JiFrmEstadoMembresia extends javax.swing.JInternalFrame {
+public class JiFrmReportesMembresias extends javax.swing.JInternalFrame {
 
     /**
-     * Creates new form JiFrmEstadoMembresia
+     * Creates new form JiFrmReportesMembresias
      */
+    ArrayList<Membresia> membresias;
     dbConnection conexion;
-    ArrayList<String> estados;
-    String[] encabezado={"ID","Cedula","Nombre","Estado"};
-    ArrayList<Cliente> registros;
-    public JiFrmEstadoMembresia(ArrayList<Cliente> registros) {
+    public JiFrmReportesMembresias() {
         initComponents();
         conexion=new dbConnection();
-        this.registros=registros;
-        estados=new ArrayList();
-        estados.add("ACTIVO");
-        estados.add("INACTIVO");
+        membresias=new ArrayList();
         llenarCombo();
         MostrarMiembro();
-        
     }
-    public void llenarCombo()
-    {
-        comboEstados.removeAllItems();
-        comboEstados.addItem("Seleccione un miembro");
-        for (int i = 0; i < estados.size(); i++) {
-            comboEstados.addItem(estados.get(i));
+    public void llenarCombo(){
+        try(Connection con = DriverManager.getConnection(conexion.getUrl(),
+                conexion.getUsername(), conexion.getPassword())){
+            comboMembresias.removeAllItems();
+            comboMembresias.addItem("Seleccione");
+            membresias.clear();
+            Statement stm = con.createStatement();
+            String query ="call  MostrarMembresias()";
+            ResultSet rs = stm.executeQuery(query);
+            
+            while(rs.next()){
+                String nombre = rs.getString("nombre_membresia");
+                int id = rs.getInt("id_membresia");
+                int precio =rs.getInt("precio_membresia");
+                int duracion=rs.getInt("duracion_membresia");
+                membresias.add(new Membresia(id, nombre,precio,duracion));
+                comboMembresias.addItem(nombre);
+            }
+            
+        }catch(SQLException e){
+            
         }
     }
-    public void filtrar(){
+      public void filtrar()
+    {
         try(Connection con = DriverManager.getConnection(conexion.getUrl(),
                 conexion.getUsername(), conexion.getPassword())){
             
             DefaultTableModel modelo = new DefaultTableModel();
             
-            PreparedStatement pstmn = con.prepareCall("call Estados(?)");
-            pstmn.setString(1, estados.get(comboEstados.getSelectedIndex()-1));
+            PreparedStatement pstmn = con.prepareCall("call mostrarMembresiaTipo(?)");
+            pstmn.setInt(1, membresias.get(comboMembresias.getSelectedIndex()-1).getIdMembresia());
             
             ResultSet rs = pstmn.executeQuery();
             ResultSetMetaData rsmt = rs.getMetaData();
@@ -75,7 +82,7 @@ public class JiFrmEstadoMembresia extends javax.swing.JInternalFrame {
                 }
                 modelo.addRow(filas);
             }
-            tableEstado.setModel(modelo);
+            tableMiembros.setModel(modelo);
             
             
     }catch(SQLException e){
@@ -83,13 +90,13 @@ public class JiFrmEstadoMembresia extends javax.swing.JInternalFrame {
         }
     }
     
-    public void MostrarMiembro(){
+        public void MostrarMiembro(){
         try(Connection con = DriverManager.getConnection(conexion.getUrl(),conexion.getUsername(), conexion.getPassword()))
         {
 
             DefaultTableModel modelo = new DefaultTableModel();
             Statement stm = con.createStatement();
-            String query = "call MostrarMiembros()";
+            String query = "call MostrarMembresias()";
             ResultSet rs = stm.executeQuery(query);
             ResultSetMetaData rsmt = rs.getMetaData();
     
@@ -104,13 +111,18 @@ public class JiFrmEstadoMembresia extends javax.swing.JInternalFrame {
                 }
                 modelo.addRow(filas);
             }
-            tableEstado.setModel(modelo);
+            tableMiembros.setModel(modelo);
         }catch(SQLException e){
             JOptionPane.showMessageDialog(rootPane, e.toString());
         }
         
    }
     
+    
+  
+
+    
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -120,31 +132,15 @@ public class JiFrmEstadoMembresia extends javax.swing.JInternalFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        buttonGroup1 = new javax.swing.ButtonGroup();
-        jCheckBox1 = new javax.swing.JCheckBox();
-        comboEstados = new javax.swing.JComboBox<>();
-        jLabel1 = new javax.swing.JLabel();
-        btnFiltrar = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
-        tableEstado = new javax.swing.JTable();
-
-        jCheckBox1.setText("jCheckBox1");
+        tableMiembros = new javax.swing.JTable();
+        btnFiltrar = new javax.swing.JButton();
+        comboMembresias = new javax.swing.JComboBox<>();
 
         setClosable(true);
         setIconifiable(true);
 
-        comboEstados.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-
-        jLabel1.setText("Estado de la membresia:");
-
-        btnFiltrar.setText("Filtrar");
-        btnFiltrar.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnFiltrarActionPerformed(evt);
-            }
-        });
-
-        tableEstado.setModel(new javax.swing.table.DefaultTableModel(
+        tableMiembros.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {null, null, null, null},
                 {null, null, null, null},
@@ -155,34 +151,38 @@ public class JiFrmEstadoMembresia extends javax.swing.JInternalFrame {
                 "Title 1", "Title 2", "Title 3", "Title 4"
             }
         ));
-        jScrollPane1.setViewportView(tableEstado);
+        jScrollPane1.setViewportView(tableMiembros);
+
+        btnFiltrar.setText("Filtrar");
+        btnFiltrar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnFiltrarActionPerformed(evt);
+            }
+        });
+
+        comboMembresias.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 483, Short.MAX_VALUE)
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 469, Short.MAX_VALUE)
             .addGroup(layout.createSequentialGroup()
-                .addGap(45, 45, 45)
+                .addGap(22, 22, 22)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(btnFiltrar, javax.swing.GroupLayout.PREFERRED_SIZE, 97, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 35, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(jLabel1)
-                    .addComponent(comboEstados, javax.swing.GroupLayout.PREFERRED_SIZE, 132, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(comboMembresias, javax.swing.GroupLayout.PREFERRED_SIZE, 104, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnFiltrar, javax.swing.GroupLayout.PREFERRED_SIZE, 68, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGap(16, 16, 16)
-                .addComponent(jLabel1)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addGap(0, 57, Short.MAX_VALUE)
+                .addComponent(comboMembresias, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(comboEstados, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btnFiltrar, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 38, Short.MAX_VALUE)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 175, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addComponent(btnFiltrar, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(28, 28, 28)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 207, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
         pack();
@@ -190,17 +190,23 @@ public class JiFrmEstadoMembresia extends javax.swing.JInternalFrame {
 
     private void btnFiltrarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnFiltrarActionPerformed
         // TODO add your handling code here:
-       filtrar();
+        if(comboMembresias.getSelectedIndex()>0)
+        {
+            filtrar();
+        }
+        else
+        {
+            JOptionPane.showMessageDialog(rootPane, "Selecione una opcion ");
+        }
+        
     }//GEN-LAST:event_btnFiltrarActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnFiltrar;
-    private javax.swing.ButtonGroup buttonGroup1;
-    private javax.swing.JComboBox<String> comboEstados;
-    private javax.swing.JCheckBox jCheckBox1;
-    private javax.swing.JLabel jLabel1;
+    private javax.swing.JComboBox<String> comboMembresias;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTable tableEstado;
+    private javax.swing.JTable tableMiembros;
     // End of variables declaration//GEN-END:variables
+
 }
