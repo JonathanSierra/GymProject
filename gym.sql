@@ -40,9 +40,44 @@ estado_pago VARCHAR(100) NOT NULL,
 CONSTRAINT fk_miembro_pago FOREIGN KEY (id_miembro) REFERENCES miembros(id_miembro)
 );
 
+CREATE TABLE perfil (
+  idPerfil int PRIMARY KEY  AUTO_INCREMENT NOT NULL,
+  nombrePerfil varchar(45) NOT NULL
+);
+INSERT INTO perfil VALUES (1,'ADMINISTRADOR'),(2,'TRABAJADOR'),(3,'CLIENTE');
+
+CREATE TABLE usuario (
+  idUsuario int PRIMARY KEY NOT NULL AUTO_INCREMENT,
+  usr varchar(45) NOT NULL,
+  pass varchar(45) NOT NULL,
+  idPerfil int NOT NULL,
+  KEY fk_usuario_perfil_idx (idPerfil),
+  CONSTRAINT fk_usuario_perfil FOREIGN KEY (idPerfil) REFERENCES perfil (idPerfil)
+) ;
+INSERT INTO usuario VALUES (1,'ADMIN','1234',1),(2,'JONATHAN','5678',2),(3,'PIPE','9012',2);
 
 -- Procedures de registros
 DELIMITER //
+
+CREATE  PROCEDURE login(p_usuario VARCHAR(45), p_pass VARCHAR(45))
+BEGIN
+
+    DECLARE v_idUsuario INT;
+    DECLARE v_usuario VARCHAR(45);
+    DECLARE v_idPerfil INT;
+
+    SELECT idUsuario, idPerfil INTO v_idUsuario, v_idPerfil
+    FROM usuario 
+    WHERE usr = p_usuario AND pass = p_pass
+    LIMIT 1;
+
+    IF v_idUsuario IS NOT NULL THEN
+        SELECT v_idUsuario AS idUsuario, v_idPerfil AS idPerfil;
+    ELSE
+        SELECT 0 AS idUsuario,  0 AS idPerfil;
+    END IF;
+
+END ;//
 
 CREATE PROCEDURE RegistrarMembresia(IN p_nombre_membresia varchar(100),IN p_precio_membresia INT,IN p_duracion_membresia INT)
 BEGIN

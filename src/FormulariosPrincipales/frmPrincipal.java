@@ -32,7 +32,7 @@ public class frmPrincipal extends javax.swing.JFrame {
      */
     
     private ArrayList<Cliente> registros = new ArrayList();
-    public frmPrincipal(int idUser, int profile, String username) {
+    public frmPrincipal(int idUser, int profile) {
         initComponents();  
     }
 
@@ -235,7 +235,7 @@ public class frmPrincipal extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new frmPrincipal(1,2,"").setVisible(true);
+                new frmPrincipal(0,0).setVisible(true);
             }
         });
     }

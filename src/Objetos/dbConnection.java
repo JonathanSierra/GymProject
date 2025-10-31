@@ -13,7 +13,7 @@ import java.sql.*;
 public class dbConnection {
     static String url = "jdbc:mysql://localhost:3306/Gimnasio";
     static String user = "root";
-    static String pass = "andrestuki32";
+    static String pass = "uck7jivl";
     
     public dbConnection() {
     }
