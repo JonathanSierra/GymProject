@@ -190,7 +190,15 @@ public class JiFrmEstadoMembresia extends javax.swing.JInternalFrame {
 
     private void btnFiltrarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnFiltrarActionPerformed
         // TODO add your handling code here:
-       filtrar();
+        if(comboEstados.getSelectedIndex()>0)
+        {
+            filtrar();
+        }
+        else
+        {
+            JOptionPane.showMessageDialog(rootPane, "Selecione un estado");
+        }
+       
     }//GEN-LAST:event_btnFiltrarActionPerformed
 
 

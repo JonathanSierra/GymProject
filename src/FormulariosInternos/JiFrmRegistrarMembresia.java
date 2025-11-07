@@ -45,7 +45,7 @@ public class JiFrmRegistrarMembresia extends javax.swing.JInternalFrame {
           
            
             pstm.executeQuery();
-            JOptionPane.showMessageDialog(rootPane, "Datos Guardados correctamente");
+            JOptionPane.showMessageDialog(rootPane, "Membresia registrada correctamente");
             
             txtNombre.setText("");
             txtDias.setText("");
@@ -77,6 +77,10 @@ public class JiFrmRegistrarMembresia extends javax.swing.JInternalFrame {
         btnRegistrar = new javax.swing.JButton();
 
         jLabel4.setText("jLabel4");
+
+        setClosable(true);
+        setIconifiable(true);
+        setMaximizable(true);
 
         txtNombre.setText("jTextField1");
 

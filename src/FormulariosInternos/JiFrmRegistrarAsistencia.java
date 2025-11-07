@@ -39,7 +39,7 @@ public class JiFrmRegistrarAsistencia extends javax.swing.JInternalFrame {
         this.asistenciass=new ArrayList();
         this.registros=registros;
         txtID.setText("");
-     
+        MostrarAsistencias();
 
     }
    
@@ -50,7 +50,7 @@ public class JiFrmRegistrarAsistencia extends javax.swing.JInternalFrame {
             PreparedStatement pstm = con.prepareCall("call RegistrarEntrada(?)");
             pstm.setInt(1,id);
             pstm.executeQuery();
-         
+            MostrarAsistencias();
         }catch(SQLException e){
             JOptionPane.showMessageDialog(rootPane, e.getMessage());
         }
@@ -64,12 +64,39 @@ public class JiFrmRegistrarAsistencia extends javax.swing.JInternalFrame {
             PreparedStatement pstm = con.prepareCall("call RegistrarSalida(?)");
             pstm.setInt(1,id);
             pstm.executeQuery();
-           
+           MostrarAsistencias();
         }catch(SQLException e){
             JOptionPane.showMessageDialog(rootPane, e.getMessage());
         }
     }
+   
+    public void MostrarAsistencias(){
+        try(Connection con = DriverManager.getConnection(conexion.getUrl(),conexion.getUsername(), conexion.getPassword()))
+        {
 
+            DefaultTableModel modelo = new DefaultTableModel();
+            Statement stm = con.createStatement();
+            String query = "call MostrarAsistencias()";
+            ResultSet rs = stm.executeQuery(query);
+            ResultSetMetaData rsmt = rs.getMetaData();
+    
+            for(int i = 1; i<=rsmt.getColumnCount(); i++){
+                modelo.addColumn(rsmt.getColumnLabel(i));
+            }
+            
+            while(rs.next()){
+                Object[] filas = new Object[rsmt.getColumnCount()];
+                for(int i = 1; i<=rsmt.getColumnCount(); i++){
+                    filas[i-1] = rs.getObject(i);
+                }
+                modelo.addRow(filas);
+            }
+            tableAsistencias.setModel(modelo);
+        }catch(SQLException e){
+            JOptionPane.showMessageDialog(rootPane, e.toString());
+        }
+        
+   }
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -85,6 +112,8 @@ public class JiFrmRegistrarAsistencia extends javax.swing.JInternalFrame {
         btnSalida = new javax.swing.JButton();
         txtID = new javax.swing.JTextField();
         jLabel1 = new javax.swing.JLabel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        tableAsistencias = new javax.swing.JTable();
 
         jCheckBox1.setText("jCheckBox1");
 
@@ -107,7 +136,20 @@ public class JiFrmRegistrarAsistencia extends javax.swing.JInternalFrame {
 
         txtID.setText("jTextField1");
 
-        jLabel1.setText("Escriba el ID:");
+        jLabel1.setText("Esciba la cedula:");
+
+        tableAsistencias.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
+            },
+            new String [] {
+                "Title 1", "Title 2", "Title 3", "Title 4"
+            }
+        ));
+        jScrollPane1.setViewportView(tableAsistencias);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -122,7 +164,8 @@ public class JiFrmRegistrarAsistencia extends javax.swing.JInternalFrame {
                         .addComponent(btnSalida, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(txtID, javax.swing.GroupLayout.PREFERRED_SIZE, 151, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel1))
-                .addContainerGap(61, Short.MAX_VALUE))
+                .addContainerGap(298, Short.MAX_VALUE))
+            .addComponent(jScrollPane1)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -135,7 +178,9 @@ public class JiFrmRegistrarAsistencia extends javax.swing.JInternalFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnEntrada, javax.swing.GroupLayout.PREFERRED_SIZE, 43, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(btnSalida, javax.swing.GroupLayout.PREFERRED_SIZE, 43, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(60, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 241, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         pack();
@@ -183,6 +228,8 @@ public class JiFrmRegistrarAsistencia extends javax.swing.JInternalFrame {
     private javax.swing.JButton btnSalida;
     private javax.swing.JCheckBox jCheckBox1;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JTable tableAsistencias;
     private javax.swing.JTextField txtID;
     // End of variables declaration//GEN-END:variables
 }

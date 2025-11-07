@@ -95,7 +95,7 @@ public class JiFrmRegistro extends javax.swing.JInternalFrame {
             pstm.setString(5,fechaNacimiento);
             pstm.setInt(6,membresias.get(posCombo).getIdMembresia());
             pstm.executeQuery();
-            JOptionPane.showMessageDialog(rootPane, "Datos Guardados correctamente");
+            JOptionPane.showMessageDialog(rootPane, "Miembro registrado correctamente");
             
             txtNombre.setText("");
             txtCedula.setText("");

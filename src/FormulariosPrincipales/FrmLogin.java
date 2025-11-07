@@ -22,12 +22,14 @@ public class FrmLogin extends javax.swing.JFrame {
      * Creates new form FrmLogin
      */
     
-    dbConnection con;
+    dbConnection conexion;
     public FrmLogin() {
         initComponents();
-        con = new dbConnection();
+        conexion = new dbConnection();
         txtUser.setText("");
         txtPass.setText("");
+        actualizarEstado();
+        
     }
     /**
      * This method is called from within the constructor to initialize the form.
@@ -40,6 +42,7 @@ public class FrmLogin extends javax.swing.JFrame {
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {                                         
         // TODO add your handling code here:
         login();
+       actualizarEstado();
     }                                        
 
     /**
@@ -77,10 +80,24 @@ public class FrmLogin extends javax.swing.JFrame {
         });
     }
     
+    public void actualizarEstado()
+    {
+        try(Connection con = DriverManager.getConnection(conexion.getUrl(),
+                conexion.getUsername(), conexion.getPassword())){
+            
+            PreparedStatement pstmn = con.prepareCall("call ActualizarEstadoMembresia()");
+            ResultSet rs = pstmn.executeQuery();
+        }
+        catch(SQLException e)
+        {
+            JOptionPane.showMessageDialog(rootPane, e.getMessage());
+        }
+    }
+    
     public void login(){
-        try (Connection conexion = DriverManager.getConnection(con.getUrl(), con.getUsername(), con.getPassword())) {
+        try (Connection con = DriverManager.getConnection(conexion.getUrl(), conexion.getUsername(), conexion.getPassword())) {
             String consulta = "call login(?,?)";
-            try (PreparedStatement ps = conexion.prepareStatement(consulta)) {
+            try (PreparedStatement ps = con.prepareStatement(consulta)) {
                 ps.setString(1, txtUser.getText().toUpperCase());
                 ps.setString(2, String.valueOf(txtPass.getPassword()));
                 try (ResultSet rs = ps.executeQuery()) {
@@ -92,14 +109,14 @@ public class FrmLogin extends javax.swing.JFrame {
                             principal.setVisible(true);
                             this.dispose();
                         } else {
-                            JOptionPane.showMessageDialog(null, "Error de usuario y/o contraseña", "Baberia", JOptionPane.ERROR_MESSAGE);
+                            JOptionPane.showMessageDialog(null, "Error de usuario y/o contraseña");
 
                         }
                     }
                 }
             }
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(rootPane, "Error de sistema, por favor comunicarse con el Administrador. Error: " + e.toString(), "Barberia", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(rootPane, e.getMessage());
 
         }
     }
@@ -177,7 +194,16 @@ public class FrmLogin extends javax.swing.JFrame {
 
     private void btnIngresarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnIngresarActionPerformed
         // TODO add your handling code here:
-        login();
+        if(!txtUser.getText().isEmpty() && !txtPass.getText().isEmpty())
+        {
+            login();
+            actualizarEstado();
+        }
+        else
+        {
+             JOptionPane.showMessageDialog(null, "Faltan campos por completar");
+        }
+        
     }//GEN-LAST:event_btnIngresarActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

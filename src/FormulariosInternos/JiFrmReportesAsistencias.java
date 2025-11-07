@@ -177,7 +177,15 @@ public class JiFrmReportesAsistencias extends javax.swing.JInternalFrame {
 
     private void btnFiltrarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnFiltrarActionPerformed
         // TODO add your handling code here:
-        filtrar();
+        if(comboFechas.getSelectedIndex()>0)
+        {
+             filtrar();
+        }
+        else
+        {
+            JOptionPane.showMessageDialog(rootPane, "Selecione entre horas o dias");
+        }
+       
     }//GEN-LAST:event_btnFiltrarActionPerformed
 
 

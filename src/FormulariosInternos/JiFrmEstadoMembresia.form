@@ -36,10 +36,7 @@
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace min="-2" pref="45" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" alignment="0" attributes="0">
-                      <Component id="btnFiltrar" min="-2" pref="97" max="-2" attributes="0"/>
-                      <EmptySpace pref="35" max="-2" attributes="0"/>
-                  </Group>
+                  <Component id="btnFiltrar" alignment="0" min="-2" pref="97" max="-2" attributes="0"/>
                   <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
                   <Component id="comboEstados" min="-2" pref="132" max="-2" attributes="0"/>
               </Group>

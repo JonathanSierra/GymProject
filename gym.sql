@@ -51,17 +51,15 @@ CREATE TABLE usuario (
   usr varchar(45) NOT NULL,
   pass varchar(45) NOT NULL,
   idPerfil int NOT NULL,
-  KEY fk_usuario_perfil_idx (idPerfil),
   CONSTRAINT fk_usuario_perfil FOREIGN KEY (idPerfil) REFERENCES perfil (idPerfil)
 ) ;
-INSERT INTO usuario VALUES (1,'ADMIN','1234',1),(2,'JONATHAN','5678',2),(3,'PIPE','9012',2);
+INSERT INTO usuario VALUES (1,'PIPE','1234',1),(2,'JONATHAN','5678',1),(3,'NOSE','9012',2);
 
 -- Procedures de registros
 DELIMITER //
 
 CREATE  PROCEDURE login(p_usuario VARCHAR(45), p_pass VARCHAR(45))
 BEGIN
-
     DECLARE v_idUsuario INT;
     DECLARE v_usuario VARCHAR(45);
     DECLARE v_idPerfil INT;
@@ -76,7 +74,6 @@ BEGIN
     ELSE
         SELECT 0 AS idUsuario,  0 AS idPerfil;
     END IF;
-
 END ;//
 
 CREATE PROCEDURE RegistrarMembresia(IN p_nombre_membresia varchar(100),IN p_precio_membresia INT,IN p_duracion_membresia INT)
@@ -85,6 +82,7 @@ INSERT INTO membresia(nombre_membresia,precio_membresia,duracion_membresia)
 	VALUES(p_nombre_membresia,p_precio_membresia,p_duracion_membresia);
 
 END;//
+
 CREATE PROCEDURE RegistrarMiembro(IN p_cedula INT,IN p_nombre VARCHAR(100), IN p_apellido VARCHAR(100), IN p_telefono VARCHAR(20),
     IN p_fecha_nacimiento DATE,IN p_id_membresia INT
 )
@@ -106,30 +104,28 @@ BEGIN
     INSERT INTO pagos (id_miembro, fecha_pago, fecha_fin_pago, monto_pago, estado_pago)
     VALUES (U_id_miembro, CURDATE(), fecha_fin, precio, 'PAGADO');
 END; //
-CREATE PROCEDURE ActualizarEstadoMembresia(IN p_id_miembro INT)
+
+CREATE PROCEDURE ActualizarEstadoMembresia()
 BEGIN
-    DECLARE fechaFin DATE;
-    DECLARE nuevoEstado VARCHAR(20);
-    DECLARE nuevoEstado2 varchar(20);
-
-    SELECT fecha_fin_pago INTO fechaFin FROM pagos WHERE id_miembro = p_id_miembro
-    ORDER BY fecha_fin_pago DESC LIMIT 1;
-
-  
-	IF fechaFin > CURDATE() THEN
-        SET nuevoEstado = 'PAGADO';
-        SET nuevoEstado2='ACTIVO';
-    ELSE
-        SET nuevoEstado = 'PENDIENTE';
-        SET nuevoEstado2='INACTIVO';
-    END IF;
-
-    UPDATE pagos
-    SET estado_pago = nuevoEstado
-    WHERE id_miembro = p_id_miembro
-    ORDER BY fecha_fin_pago DESC
-	LIMIT 1;
-     UPDATE miembros SET estado_miembro = nuevoEstado2 WHERE id_miembro = p_id_miembro;
+    
+    UPDATE pagos p
+    -- lo que esta dentro de los parentecis es una sub consulta sirve para saber cual fue el ultimo pago
+    JOIN (SELECT id_miembro, MAX(fecha_fin_pago) AS ultima_fecha FROM pagos GROUP BY id_miembro) 
+    ult ON p.id_miembro = ult.id_miembro AND p.fecha_fin_pago = ult.ultima_fecha 
+    -- este case funciona como un if si la ultima fecha es menor que la actual el estado cambia a pendiente
+    -- y ya hace eso 
+    SET p.estado_pago = CASE 
+    WHEN ult.ultima_fecha > CURDATE() THEN 'PAGADO'
+        ELSE 'PENDIENTE'
+    END;
+	 
+	-- lo mismo que arriba pero solo cambia el estado de la membresia
+    UPDATE miembros m
+    JOIN ( SELECT id_miembro, MAX(fecha_fin_pago) AS ultima_fecha FROM pagos GROUP BY id_miembro) ult ON m.id_miembro = ult.id_miembro
+    SET m.estado_miembro = CASE
+        WHEN ult.ultima_fecha > CURDATE() THEN 'ACTIVO'
+        ELSE 'INACTIVO'
+    END;
 END; //
 
 
@@ -143,13 +139,12 @@ BEGIN
     
     SELECT id_miembro,estado_miembro INTO u_id_miembro, u_estado_miembro FROM miembros
     WHERE cedula_miembro = p_cedula_miembro;
-    call ActualizarEstadoMembresia(u_id_miembro);
+	
     
     SELECT estado_pago INTO u_estado_pago FROM pagos
     WHERE u_id_miembro = id_miembro ORDER BY fecha_pago DESC
 	LIMIT 1;
     
-    call ActualizarEstadoMembresia(u_id_miembro);
 	
     SELECT COUNT(*) INTO u_asistencia_activa FROM asistencias
     WHERE u_id_miembro = id_miembro AND fecha_salida IS NULL;
@@ -200,7 +195,7 @@ BEGIN
     DECLARE cedula INT;
     DECLARE id INT;
 	select id_miembro into id from miembros where cedula_miembro=p_cedula_miembro;
-    call ActualizarEstadoMembresia(id);
+    
     SELECT estado_pago INTO estado_pagos FROM pagos where id_miembro=id;
 	SELECT cedula_miembro,id_miembro INTO cedula,id from miembros where id_miembro=id;
     IF cedula=p_cedula_miembro THEN

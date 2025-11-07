@@ -48,7 +48,7 @@ public class JiFrmRegistrarPago extends javax.swing.JInternalFrame {
             PreparedStatement pstm = con.prepareCall("call pagar(?)");
             pstm.setInt(1,id);
             pstm.executeQuery();
-           
+           JOptionPane.showMessageDialog(rootPane, "Pago completado");
             
         }catch(SQLException e){
             JOptionPane.showMessageDialog(rootPane, e.getMessage());
@@ -70,7 +70,7 @@ public class JiFrmRegistrarPago extends javax.swing.JInternalFrame {
             
             
     }catch(SQLException e){
-            JOptionPane.showMessageDialog(rootPane, e.toString());
+            JOptionPane.showMessageDialog(rootPane, e.getMessage());
         }
     }
   
