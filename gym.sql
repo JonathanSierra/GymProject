@@ -55,6 +55,25 @@ CREATE TABLE usuario (
 ) ;
 INSERT INTO usuario VALUES (1,'PIPE','1234',1),(2,'JONATHAN','5678',1),(3,'NOSE','9012',2);
 
+-- Trigger de usarios
+
+DELIMITER //
+CREATE TRIGGER generar_usuario_contraseña
+BEFORE INSERT ON usuario
+FOR EACH ROW
+BEGIN
+    -- Si no se da usuario, generarlo con prefijo + id temporal
+    IF NEW.usr IS NULL OR NEW.usr = '' THEN
+        SET NEW.usr = CONCAT('user', FLOOR(RAND() * 10000));
+    END IF;
+
+    -- Si no se da contraseña, generar una aleatoria de 8 caracteres
+    IF NEW.pass IS NULL OR NEW.pass = '' THEN
+        SET NEW.pass = SUBSTRING(MD5(RAND()), 1, 8);
+    END IF;
+END //
+DELIMITER ;
+
 -- Procedures de registros
 DELIMITER //
 
@@ -287,6 +306,17 @@ inner join miembros m on m.id_membresia=me.id_membresia where p_id_membresia=me.
 
 END;//
 
+CREATE PROCEDURE buscar_pagos_por_fecha(IN fecha_inicio DATE, IN fecha_fin DATE)
+BEGIN
+    SELECT p.id_pago, m.cedula_miembro, m.nombre_miembro, me.nombre_membresia,
+           p.fecha_pago, p.monto_pago, p.estado_pago
+    FROM pagos p
+    INNER JOIN miembros m ON p.id_miembro = m.id_miembro
+    INNER JOIN membresias me ON m.id_membresia = me.id_membresia
+    WHERE DATE(p.fecha_pago) BETWEEN fecha_inicio AND fecha_fin
+    ORDER BY p.fecha_pago ASC;
+END; //
+
 -- fin de los filtros
 
 
@@ -307,13 +337,3 @@ CALL RegistrarMiembro(123456789,'Andrés','Ruiz','3102123145','2009-11-12',3);//
 CALL RegistrarMiembro(201937801,'Yerson','Hurtado','3564641341','2011-05-12',2);//
 CALL RegistrarMiembro(310974019,'Esteban','Oviedo','3145239876','2015-06-26',1);//
 CALL RegistrarMiembro(198374762,'Harinton','Alvear','3102123145','1992-07-23',3);//
-
-
-
-
-
-
-
-
-
-

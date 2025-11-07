@@ -17,7 +17,7 @@
     </Component>
     <Menu class="javax.swing.JMenuBar" name="menuRegistro">
       <SubComponents>
-        <Menu class="javax.swing.JMenu" name="jMenu3">
+        <Menu class="javax.swing.JMenu" name="menuRegistros">
           <Properties>
             <Property name="text" type="java.lang.String" value="Registros"/>
           </Properties>
@@ -56,7 +56,7 @@
             </MenuItem>
           </SubComponents>
         </Menu>
-        <Menu class="javax.swing.JMenu" name="jMenu1">
+        <Menu class="javax.swing.JMenu" name="menuReportes">
           <Properties>
             <Property name="text" type="java.lang.String" value="Reportes"/>
           </Properties>
@@ -83,6 +83,14 @@
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="menuTipoMembresiaActionPerformed"/>
+              </Events>
+            </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="jMenuPeriodoPagos">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Periodo de pagos"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jMenuPeriodoPagosActionPerformed"/>
               </Events>
             </MenuItem>
           </SubComponents>
@@ -116,17 +124,17 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="principalDeskpot" alignment="0" max="32767" attributes="0"/>
+          <Component id="principalDesktop" alignment="0" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="principalDeskpot" alignment="0" max="32767" attributes="0"/>
+          <Component id="principalDesktop" alignment="0" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
   </Layout>
   <SubComponents>
-    <Container class="javax.swing.JDesktopPane" name="principalDeskpot">
+    <Container class="javax.swing.JDesktopPane" name="principalDesktop">
 
       <Layout>
         <DimensionLayout dim="0">
