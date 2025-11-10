@@ -4,6 +4,7 @@
  */
 package FormulariosPrincipales;
 
+import FormulariosInternos.JiFrmDiasFaltantes;
 import FormulariosInternos.JiFrmRegistrarAsistencia;
 import FormulariosInternos.JiFrmEstadoMembresia;
 import FormulariosInternos.JiFrmPeriodosPagos;
@@ -37,7 +38,7 @@ public class frmPrincipal extends javax.swing.JFrame {
         initComponents();
         
         if (profile != 1){
-            menuReportes.disable();
+            menuRegistrarMembresia.setEnabled(false);
         }
     }
 
@@ -53,6 +54,7 @@ public class frmPrincipal extends javax.swing.JFrame {
         jScrollPane1 = new javax.swing.JScrollPane();
         jTextPane1 = new javax.swing.JTextPane();
         buttonGroup1 = new javax.swing.ButtonGroup();
+        jMenuItem1 = new javax.swing.JMenuItem();
         principalDesktop = new javax.swing.JDesktopPane();
         menuRegistro = new javax.swing.JMenuBar();
         menuRegistros = new javax.swing.JMenu();
@@ -65,8 +67,11 @@ public class frmPrincipal extends javax.swing.JFrame {
         menuRasistencias = new javax.swing.JMenuItem();
         menuTipoMembresia = new javax.swing.JMenuItem();
         jMenuPeriodoPagos = new javax.swing.JMenuItem();
+        menuDiasRestantes = new javax.swing.JMenuItem();
 
         jScrollPane1.setViewportView(jTextPane1);
+
+        jMenuItem1.setText("jMenuItem1");
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setBackground(new java.awt.Color(102, 255, 255));
@@ -152,6 +157,14 @@ public class frmPrincipal extends javax.swing.JFrame {
         });
         menuReportes.add(jMenuPeriodoPagos);
 
+        menuDiasRestantes.setText("Dias restantes de la membresia");
+        menuDiasRestantes.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                menuDiasRestantesActionPerformed(evt);
+            }
+        });
+        menuReportes.add(menuDiasRestantes);
+
         menuRegistro.add(menuReportes);
 
         setJMenuBar(menuRegistro);
@@ -226,6 +239,13 @@ public class frmPrincipal extends javax.swing.JFrame {
         PeriodoPagos.show();
     }//GEN-LAST:event_jMenuPeriodoPagosActionPerformed
 
+    private void menuDiasRestantesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuDiasRestantesActionPerformed
+        // TODO add your handling code here:
+        JiFrmDiasFaltantes dias=new JiFrmDiasFaltantes();
+        principalDesktop.add(dias);
+        dias.show();
+    }//GEN-LAST:event_menuDiasRestantesActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -263,10 +283,12 @@ public class frmPrincipal extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup buttonGroup1;
+    private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JMenuItem jMenuPeriodoPagos;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTextPane jTextPane1;
     private javax.swing.JMenuItem menuAsistencia;
+    private javax.swing.JMenuItem menuDiasRestantes;
     private javax.swing.JMenuItem menuEstado;
     private javax.swing.JMenuItem menuMiembros;
     private javax.swing.JMenuItem menuPago;

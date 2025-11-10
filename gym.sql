@@ -58,25 +58,24 @@ INSERT INTO usuario VALUES (1,'PIPE','1234',1),(2,'JONATHAN','5678',1),(3,'NOSE'
 -- Trigger de usarios
 
 DELIMITER //
-CREATE TRIGGER generar_usuario_contraseña
-BEFORE INSERT ON usuario
+CREATE TRIGGER crear_usuario_miembro
+AFTER INSERT ON miembros
 FOR EACH ROW
 BEGIN
-    -- Si no se da usuario, generarlo con prefijo + id temporal
-    IF NEW.usr IS NULL OR NEW.usr = '' THEN
-        SET NEW.usr = CONCAT('user', FLOOR(RAND() * 10000));
-    END IF;
+    DECLARE nuevo_usr VARCHAR(45);
+    DECLARE nueva_pass VARCHAR(45);
 
-    -- Si no se da contraseña, generar una aleatoria de 8 caracteres
-    IF NEW.pass IS NULL OR NEW.pass = '' THEN
-        SET NEW.pass = SUBSTRING(MD5(RAND()), 1, 8);
-    END IF;
+    SET nuevo_usr = CONCAT('user', NEW.id_miembro);
+    SET nueva_pass = SUBSTRING(MD5(RAND()), 1, 8);
+
+
+    INSERT INTO usuario (usr, pass, idPerfil)
+    VALUES (nuevo_usr, nueva_pass, 3);
 END //
-DELIMITER ;
+
+
 
 -- Procedures de registros
-DELIMITER //
-
 CREATE  PROCEDURE login(p_usuario VARCHAR(45), p_pass VARCHAR(45))
 BEGIN
     DECLARE v_idUsuario INT;
@@ -97,7 +96,7 @@ END ;//
 
 CREATE PROCEDURE RegistrarMembresia(IN p_nombre_membresia varchar(100),IN p_precio_membresia INT,IN p_duracion_membresia INT)
 BEGIN
-INSERT INTO membresia(nombre_membresia,precio_membresia,duracion_membresia)
+INSERT INTO membresias(nombre_membresia,precio_membresia,duracion_membresia)
 	VALUES(p_nombre_membresia,p_precio_membresia,p_duracion_membresia);
 
 END;//
@@ -308,17 +307,53 @@ END;//
 
 CREATE PROCEDURE buscar_pagos_por_fecha(IN fecha_inicio DATE, IN fecha_fin DATE)
 BEGIN
-    SELECT p.id_pago, m.cedula_miembro, m.nombre_miembro, me.nombre_membresia,
-           p.fecha_pago, p.monto_pago, p.estado_pago
+    SELECT  m.cedula_miembro AS Cedula,me.nombre_membresia AS Nombre_membresia,
+           p.fecha_pago AS Fecha, p.monto_pago AS Pago 
     FROM pagos p
     INNER JOIN miembros m ON p.id_miembro = m.id_miembro
     INNER JOIN membresias me ON m.id_membresia = me.id_membresia
-    WHERE DATE(p.fecha_pago) BETWEEN fecha_inicio AND fecha_fin
+    WHERE DATE(p.fecha_pago) BETWEEN fecha_inicio AND fecha_fin AND p.estado_pago = 'PAGADO'
     ORDER BY p.fecha_pago ASC;
 END; //
-
+CREATE PROCEDURE mostrar_pagos_pagados()
+BEGIN
+    SELECT m.cedula_miembro AS Cedula,p.fecha_pago AS Fecha_Pago FROM pagos p
+    INNER JOIN miembros m ON p.id_miembro = m.id_miembro
+    WHERE p.estado_pago = 'PAGADO';
+END;//
 -- fin de los filtros
 
+-- funciones:
+
+
+CREATE FUNCTION diasRestantesMembresia(p_id_miembro INT)
+RETURNS INT
+DETERMINISTIC
+BEGIN
+    DECLARE diasRestantes INT;
+    
+    SELECT DATEDIFF((SELECT p.fecha_fin_pago FROM pagos p WHERE p.id_miembro = p_id_miembro
+	ORDER BY p.fecha_fin_pago DESC LIMIT 1),CURDATE())INTO diasRestantes; 
+	RETURN diasRestantes;
+END;
+//
+
+CREATE PROCEDURE verDiasRestantes(IN p_cedula VARCHAR(20))
+BEGIN
+    DECLARE v_id INT;
+    DECLARE v_dias_restantes INT;
+    
+    SELECT id_miembro INTO v_id FROM miembros WHERE cedula_miembro = p_cedula LIMIT 1;
+	SET v_dias_restantes = diasRestantesMembresia(v_id);
+	SELECT v_dias_restantes AS Dias_Restantes;
+
+END;
+//
+
+CREATE PROCEDURE verMiembro()
+BEGIN
+	SELECT * FROM miembros;
+END;//
 
 
 
@@ -327,13 +362,30 @@ VALUES ('Mensual', 80000, 30),('Trimestral', 120000, 60),('Anual', 160000, 365);
 
 -- inserts de miembros:
 insert into miembros (cedula_miembro,nombre_miembro,telefono_miembro,apellido_miembro,fecha_nacimiento,id_membresia,estado_miembro,fecha_registro) 
-values(12345,'a',12345,'r','2006-12-25',2,'ACTIVO','2025-10-25');//
+values(12345,'Andres',12345,'Ruiz','2006-12-25',2,'ACTIVO','2025-10-25'),
+(1001, 'Carlos', '3001112233', 'Gómez', '1990-04-12', 1, 'ACTIVO', '2025-10-04'),
+(1002, 'Laura', '3012223344', 'Martínez', '1995-08-23', 2, 'ACTIVO', '2025-10-21'),
+(1003, 'Andrés', '3023334455', 'Fernández', '1989-12-05', 1, 'ACTIVO','2025-10-30'),
+(1004, 'Valentina', '3034445566', 'López', '1998-02-17', 3, 'ACTIVO', '2025-10-20');//
 
 -- inserts de pagos:
-insert into pagos(id_miembro,fecha_pago,fecha_fin_pago,monto_pago,estado_pago)values(1,'2025-9-28','2025-10-30',80000,'PAGADO');//
+INSERT INTO pagos(id_miembro, fecha_pago, fecha_fin_pago, monto_pago, estado_pago) VALUES
+(1, '2025-09-28', '2025-10-30', 80000, 'PAGADO'),
+(2, '2025-10-05', '2025-11-05', 120000, 'PAGADO'),
+(3, '2025-08-20', '2025-09-20', 80000, 'PAGADO'),
+(4, '2025-10-25', '2025-11-25', 100000, 'PAGADO');//
 
-CALL RegistrarMiembro(128456789,'Adriam','Thomas','3105558899','2006-12-25',1);//
-CALL RegistrarMiembro(123456789,'Andrés','Ruiz','3102123145','2009-11-12',3);//
-CALL RegistrarMiembro(201937801,'Yerson','Hurtado','3564641341','2011-05-12',2);//
-CALL RegistrarMiembro(310974019,'Esteban','Oviedo','3145239876','2015-06-26',1);//
-CALL RegistrarMiembro(198374762,'Harinton','Alvear','3102123145','1992-07-23',3);//
+-- inserts de asistencias:
+INSERT INTO asistencias(fecha_entrada, fecha_salida, id_miembro) VALUES
+('2025-11-01 07:00:00', '2025-11-01 09:00:00', 1),
+('2025-11-03 07:15:00', '2025-11-03 09:10:00', 1),
+('2025-11-05 07:20:00', '2025-11-05 09:30:00', 1),
+('2025-11-02 08:00:00', '2025-11-02 10:00:00', 2),
+('2025-11-04 08:10:00', '2025-11-04 10:05:00', 2),
+('2025-11-06 08:30:00', '2025-11-06 10:15:00', 2),
+('2025-11-03 09:00:00', '2025-11-03 11:00:00', 3),
+('2025-11-05 09:10:00', '2025-11-05 11:05:00', 3),
+('2025-11-04 07:30:00', '2025-11-04 09:45:00', 4),
+('2025-11-06 07:25:00', '2025-11-06 09:35:00', 4);//
+
+

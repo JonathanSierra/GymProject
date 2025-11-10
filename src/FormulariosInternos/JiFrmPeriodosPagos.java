@@ -4,13 +4,16 @@
  */
 package FormulariosInternos;
 
+import Objetos.dbConnection;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 
@@ -23,65 +26,83 @@ public class JiFrmPeriodosPagos extends javax.swing.JInternalFrame {
     /**
      * Creates new form JiFrmPeriodosPagos
      */
+    dbConnection conexion;
     public JiFrmPeriodosPagos() {
         initComponents();
-        inicializarTabla();
+        conexion=new dbConnection();
+        todosPagos();
+        
+      
     }
     
-    private void inicializarTabla() {
-    String[] encabezado = {"ID", "Cédula", "Nombre", "Membresía", "Fecha de Pago", "Monto", "Estado"};
-    DefaultTableModel modelo = new DefaultTableModel(encabezado, 0);
-    tablePeriodosPagos.setModel(modelo);
-}
-
     private void buscarPagosPorFecha() {
-        // Validar que se hayan seleccionado ambas fechas
-        if (jDateInicio.getDate() == null || jDateFin.getDate() == null) {
-            JOptionPane.showMessageDialog(this, "Selecciona las dos fechas para realizar la búsqueda.");
-            return;
-        }
-
-        // Convertir fechas a java.sql.Date
-        java.sql.Date fechaInicio = new java.sql.Date(jDateInicio.getDate().getTime());
-        java.sql.Date fechaFin = new java.sql.Date(jDateFin.getDate().getTime());
-
-        // Encabezados
-        String[] encabezado = {"ID", "Cédula", "Nombre", "Membresía", "Fecha de Pago", "Monto", "Estado"};
-        DefaultTableModel modelo = new DefaultTableModel(encabezado, 0);
-        tablePeriodosPagos.setModel(modelo);
-
-        // Llamado al procedimiento almacenado
-        String call = "{CALL buscar_pagos_por_fecha(?, ?)}";
-
-        try (Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/gimnasio", "root", "uck7jivl"); CallableStatement cs = conn.prepareCall(call)) {
-
-            // Pasar los parámetros al procedimiento
-            cs.setDate(1, fechaInicio);
-            cs.setDate(2, fechaFin);
-
-            try (ResultSet rs = cs.executeQuery()) {
-                while (rs.next()) {
-                    Object[] fila = {
-                        rs.getInt("id_pago"),
-                        rs.getInt("cedula_miembro"),
-                        rs.getString("nombre_miembro"),
-                        rs.getString("nombre_membresia"),
-                        rs.getDate("fecha_pago"),
-                        rs.getInt("monto_pago"),
-                        rs.getString("estado_pago")
-                    };
-                    modelo.addRow(fila);
+         try(Connection con = DriverManager.getConnection(conexion.getUrl(),
+                conexion.getUsername(), conexion.getPassword())){
+            
+            DefaultTableModel modelo = new DefaultTableModel();
+            
+            String fechaDesde,fechaHasta;
+            Date fechaH=dateFechaHasta.getDate();
+            Date fechaD = dateFechaDesde.getDate();
+            fechaHasta= new SimpleDateFormat("yyyy-MM-dd").format(fechaH);
+            fechaDesde = new SimpleDateFormat("yyyy-MM-dd").format(fechaD);
+            PreparedStatement pstmn = con.prepareCall("call buscar_pagos_por_fecha(?,?)");
+            pstmn.setString(1,fechaDesde );
+            pstmn.setString(2,fechaHasta );
+            
+            ResultSet rs = pstmn.executeQuery();
+            ResultSetMetaData rsmt = rs.getMetaData();
+            
+            for(int i = 1; i<=rsmt.getColumnCount(); i++){
+                modelo.addColumn(rsmt.getColumnLabel(i));
+            }
+            
+            while(rs.next()){
+                Object[] filas = new Object[rsmt.getColumnCount()];
+                for(int i = 1; i<=rsmt.getColumnCount(); i++){
+                    filas[i-1] = rs.getObject(i);
                 }
+                modelo.addRow(filas);
             }
-
-            if (modelo.getRowCount() == 0) {
-                JOptionPane.showMessageDialog(this, "No se encontraron pagos en el rango seleccionado.");
-            }
-
-        } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this, "Error al obtener los datos: " + e.getMessage());
+            tablePeriodosPagos.setModel(modelo);
+            
+            
+    }catch(SQLException e){
+            JOptionPane.showMessageDialog(rootPane, e.toString());
         }
     }  
+    
+    public void todosPagos()
+    {
+        try(Connection con = DriverManager.getConnection(conexion.getUrl(),
+                conexion.getUsername(), conexion.getPassword())){
+            
+            DefaultTableModel modelo = new DefaultTableModel();
+            
+            PreparedStatement pstmn = con.prepareCall("call mostrar_pagos_pagados()");
+           
+            
+            ResultSet rs = pstmn.executeQuery();
+            ResultSetMetaData rsmt = rs.getMetaData();
+            
+            for(int i = 1; i<=rsmt.getColumnCount(); i++){
+                modelo.addColumn(rsmt.getColumnLabel(i));
+            }
+            
+            while(rs.next()){
+                Object[] filas = new Object[rsmt.getColumnCount()];
+                for(int i = 1; i<=rsmt.getColumnCount(); i++){
+                    filas[i-1] = rs.getObject(i);
+                }
+                modelo.addRow(filas);
+            }
+            tablePeriodosPagos.setModel(modelo);
+            
+            
+    }catch(SQLException e){
+            JOptionPane.showMessageDialog(rootPane, e.toString());
+        }
+    }
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -94,8 +115,8 @@ public class JiFrmPeriodosPagos extends javax.swing.JInternalFrame {
         jScrollPane1 = new javax.swing.JScrollPane();
         tablePeriodosPagos = new javax.swing.JTable();
         jButton1 = new javax.swing.JButton();
-        jDateFin = new com.toedter.calendar.JDateChooser();
-        jDateInicio = new com.toedter.calendar.JDateChooser();
+        dateFechaHasta = new com.toedter.calendar.JDateChooser();
+        dateFechaDesde = new com.toedter.calendar.JDateChooser();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
 
@@ -136,15 +157,15 @@ public class JiFrmPeriodosPagos extends javax.swing.JInternalFrame {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addGap(51, 51, 51)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jDateInicio, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(dateFechaDesde, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel1))
                 .addGap(53, 53, 53)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jDateFin, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(dateFechaHasta, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel2))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(jButton1)
-                .addGap(64, 64, 64))
+                .addGap(134, 134, 134))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -155,11 +176,11 @@ public class JiFrmPeriodosPagos extends javax.swing.JInternalFrame {
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel2)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jDateFin, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(dateFechaHasta, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel1)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jDateInicio, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(dateFechaDesde, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 95, Short.MAX_VALUE)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 163, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
@@ -169,14 +190,22 @@ public class JiFrmPeriodosPagos extends javax.swing.JInternalFrame {
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         // TODO add your handling code here:
-        buscarPagosPorFecha();
+        if(dateFechaDesde.getDate() != null && dateFechaHasta.getDate() != null )
+        {
+             buscarPagosPorFecha();
+        }
+        else
+        {
+            JOptionPane.showMessageDialog(rootPane, "Llene los campos de fechas");
+        }
+       
     }//GEN-LAST:event_jButton1ActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private com.toedter.calendar.JDateChooser dateFechaDesde;
+    private com.toedter.calendar.JDateChooser dateFechaHasta;
     private javax.swing.JButton jButton1;
-    private com.toedter.calendar.JDateChooser jDateFin;
-    private com.toedter.calendar.JDateChooser jDateInicio;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JScrollPane jScrollPane1;
