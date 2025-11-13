@@ -18,6 +18,11 @@ import Objetos.Estado;
 import Objetos.Membresia;
 import Objetos.Cliente;
 import Objetos.dbConnection;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
@@ -32,13 +37,27 @@ public class frmPrincipal extends javax.swing.JFrame {
     /**
      * Creates new form frmPrincipal
      */
-    
+    dbConnection conexion;
     private ArrayList<Cliente> registros = new ArrayList();
     public frmPrincipal(int idUser, int profile) {
         initComponents();
-        
+        conexion=new dbConnection();
         if (profile != 1){
             menuRegistrarMembresia.setEnabled(false);
+        }
+    }
+    
+       public void actualizarEstado()
+    {
+        try(Connection con = DriverManager.getConnection(conexion.getUrl(),
+                conexion.getUsername(), conexion.getPassword())){
+            
+            PreparedStatement pstmn = con.prepareCall("call ActualizarEstadoMembresia()");
+            ResultSet rs = pstmn.executeQuery();
+        }
+        catch(SQLException e)
+        {
+            JOptionPane.showMessageDialog(rootPane, e.getMessage());
         }
     }
 
@@ -62,6 +81,7 @@ public class frmPrincipal extends javax.swing.JFrame {
         menuAsistencia = new javax.swing.JMenuItem();
         menuPago = new javax.swing.JMenuItem();
         menuRegistrarMembresia = new javax.swing.JMenuItem();
+        menuCerrar = new javax.swing.JMenuItem();
         menuReportes = new javax.swing.JMenu();
         menuEstado = new javax.swing.JMenuItem();
         menuRasistencias = new javax.swing.JMenuItem();
@@ -120,6 +140,14 @@ public class frmPrincipal extends javax.swing.JFrame {
             }
         });
         menuRegistros.add(menuRegistrarMembresia);
+
+        menuCerrar.setText("Cerrar Sesion");
+        menuCerrar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                menuCerrarActionPerformed(evt);
+            }
+        });
+        menuRegistros.add(menuCerrar);
 
         menuRegistro.add(menuRegistros);
 
@@ -185,28 +213,35 @@ public class frmPrincipal extends javax.swing.JFrame {
 
     private void menuEstadoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuEstadoActionPerformed
         // TODO add your handling code here:
+        actualizarEstado();
         JiFrmEstadoMembresia estado =new JiFrmEstadoMembresia(registros);
         principalDesktop.add(estado);
         estado.show();
+       
     }//GEN-LAST:event_menuEstadoActionPerformed
 
     private void menuMiembrosActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuMiembrosActionPerformed
         // TODO add your handling code here:
+        actualizarEstado();
         JiFrmRegistro registro=new JiFrmRegistro(registros);
         principalDesktop.add(registro);
         registro.show();
+      
     }//GEN-LAST:event_menuMiembrosActionPerformed
 
     private void menuPagoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuPagoActionPerformed
         // TODO add your handling code here:
+        actualizarEstado();
         JiFrmRegistrarPago pago =new JiFrmRegistrarPago(registros);
         principalDesktop.add(pago);
         pago.show();
+        
         
     }//GEN-LAST:event_menuPagoActionPerformed
 
     private void menuAsistenciaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuAsistenciaActionPerformed
         // TODO add your handling code here:
+        actualizarEstado();
         JiFrmRegistrarAsistencia asistencia =new JiFrmRegistrarAsistencia(registros);
         principalDesktop.add(asistencia);
         asistencia.show();
@@ -214,6 +249,7 @@ public class frmPrincipal extends javax.swing.JFrame {
 
     private void menuRasistenciasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuRasistenciasActionPerformed
         // TODO add your handling code here:
+        actualizarEstado();
         JiFrmReportesAsistencias Rasistencias=new JiFrmReportesAsistencias();
         principalDesktop.add(Rasistencias);
         Rasistencias.show();
@@ -221,6 +257,7 @@ public class frmPrincipal extends javax.swing.JFrame {
 
     private void menuTipoMembresiaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuTipoMembresiaActionPerformed
         // TODO add your handling code here:
+        actualizarEstado();
         JiFrmReportesMembresias membresias=new JiFrmReportesMembresias();
          principalDesktop.add(membresias);
         membresias.show();
@@ -228,12 +265,14 @@ public class frmPrincipal extends javax.swing.JFrame {
 
     private void menuRegistrarMembresiaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuRegistrarMembresiaActionPerformed
         JiFrmRegistrarMembresia Rmembresia =new JiFrmRegistrarMembresia();
+        actualizarEstado();
         principalDesktop.add(Rmembresia);
         Rmembresia.show();
     }//GEN-LAST:event_menuRegistrarMembresiaActionPerformed
 
     private void jMenuPeriodoPagosActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuPeriodoPagosActionPerformed
         // TODO add your handling code here:
+        actualizarEstado();
         JiFrmPeriodosPagos PeriodoPagos = new JiFrmPeriodosPagos();
         principalDesktop.add(PeriodoPagos);
         PeriodoPagos.show();
@@ -241,10 +280,20 @@ public class frmPrincipal extends javax.swing.JFrame {
 
     private void menuDiasRestantesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuDiasRestantesActionPerformed
         // TODO add your handling code here:
+        actualizarEstado();
         JiFrmDiasFaltantes dias=new JiFrmDiasFaltantes();
         principalDesktop.add(dias);
         dias.show();
     }//GEN-LAST:event_menuDiasRestantesActionPerformed
+
+    private void menuCerrarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuCerrarActionPerformed
+        // TODO add your handling code here:
+        actualizarEstado();
+        FrmLogin login=new FrmLogin();
+        login.setVisible(true);
+        this.dispose();
+        
+    }//GEN-LAST:event_menuCerrarActionPerformed
 
     /**
      * @param args the command line arguments
@@ -288,6 +337,7 @@ public class frmPrincipal extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTextPane jTextPane1;
     private javax.swing.JMenuItem menuAsistencia;
+    private javax.swing.JMenuItem menuCerrar;
     private javax.swing.JMenuItem menuDiasRestantes;
     private javax.swing.JMenuItem menuEstado;
     private javax.swing.JMenuItem menuMiembros;

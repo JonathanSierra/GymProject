@@ -48,30 +48,45 @@ INSERT INTO perfil VALUES (1,'ADMINISTRADOR'),(2,'TRABAJADOR'),(3,'CLIENTE');
 
 CREATE TABLE usuario (
   idUsuario int PRIMARY KEY NOT NULL AUTO_INCREMENT,
-  usr varchar(45) NOT NULL,
-  pass varchar(45) NOT NULL,
+  usuario varchar(45) NOT NULL,
+  contraseña varchar(45) NOT NULL,
   idPerfil int NOT NULL,
   CONSTRAINT fk_usuario_perfil FOREIGN KEY (idPerfil) REFERENCES perfil (idPerfil)
 ) ;
-INSERT INTO usuario VALUES (1,'PIPE','1234',1),(2,'JONATHAN','5678',1),(3,'NOSE','9012',2);
 
--- Trigger de usarios
+CREATE TABLE cp_usuario(
+  idUsuario int PRIMARY KEY NOT NULL AUTO_INCREMENT,
+  usuario varchar(45) NOT NULL,
+  contraseña varchar(45) NOT NULL,
+  idPerfil int NOT NULL,
+  CONSTRAINT fk_cp_usuario_perfil FOREIGN KEY (idPerfil) REFERENCES perfil (idPerfil)
+) ;
+INSERT INTO cp_usuario VALUES (1,'PIPE','1234',1),(2,'JONATHAN','5678',1),(3,'NOSE','9012',2);
+
+-- Trigger
 
 DELIMITER //
-CREATE TRIGGER crear_usuario_miembro
-AFTER INSERT ON miembros
+CREATE TRIGGER crearUsuario
+AFTER INSERT ON usuario
 FOR EACH ROW
 BEGIN
     DECLARE nuevo_usr VARCHAR(45);
     DECLARE nueva_pass VARCHAR(45);
 
-    SET nuevo_usr = CONCAT('user', NEW.id_miembro);
-    SET nueva_pass = SUBSTRING(MD5(RAND()), 1, 8);
+    SET nuevo_usr = CONCAT(NEW.usuario,"_", "GY");
+    SET nueva_pass = CONCAT("tuki",New.usuario);
+    INSERT INTO cp_usuario (usuario, contraseña, idPerfil)
+    VALUES (nuevo_usr, nueva_pass, 2);
+END;//
+CREATE PROCEDURE registrarUsuario(p_usuario VARCHAR(100),p_contraseña VARCHAR(255))
+BEGIN
+	INSERT usuario(usuario,contraseña,idPerfil) VALUES(p_usuario,p_contraseña,2);
+END;//
 
-
-    INSERT INTO usuario (usr, pass, idPerfil)
-    VALUES (nuevo_usr, nueva_pass, 3);
-END //
+CREATE PROCEDURE verUsuario()
+BEGIN
+	SELECT * FROM cp_usuario ORDER BY idUsuario DESC LIMIT 1;
+END;//
 
 
 
@@ -83,9 +98,10 @@ BEGIN
     DECLARE v_idPerfil INT;
 
     SELECT idUsuario, idPerfil INTO v_idUsuario, v_idPerfil
-    FROM usuario 
-    WHERE usr = p_usuario AND pass = p_pass
+    FROM cp_usuario 
+    WHERE usuario = p_usuario AND contraseña = p_pass
     LIMIT 1;
+    
 
     IF v_idUsuario IS NOT NULL THEN
         SELECT v_idUsuario AS idUsuario, v_idPerfil AS idPerfil;
@@ -94,15 +110,15 @@ BEGIN
     END IF;
 END ;//
 
-CREATE PROCEDURE RegistrarMembresia(IN p_nombre_membresia varchar(100),IN p_precio_membresia INT,IN p_duracion_membresia INT)
+CREATE PROCEDURE RegistrarMembresia( p_nombre_membresia varchar(100),p_precio_membresia INT,p_duracion_membresia INT)
 BEGIN
 INSERT INTO membresias(nombre_membresia,precio_membresia,duracion_membresia)
 	VALUES(p_nombre_membresia,p_precio_membresia,p_duracion_membresia);
 
 END;//
 
-CREATE PROCEDURE RegistrarMiembro(IN p_cedula INT,IN p_nombre VARCHAR(100), IN p_apellido VARCHAR(100), IN p_telefono VARCHAR(20),
-    IN p_fecha_nacimiento DATE,IN p_id_membresia INT
+CREATE PROCEDURE RegistrarMiembro(p_cedula INT, p_nombre VARCHAR(100),  p_apellido VARCHAR(100), p_telefono VARCHAR(20),
+     p_fecha_nacimiento DATE,p_id_membresia INT
 )
 BEGIN
     DECLARE U_id_miembro INT;
@@ -148,7 +164,7 @@ END; //
 
 
 
-CREATE PROCEDURE RegistrarEntrada(IN p_cedula_miembro INT)
+CREATE PROCEDURE RegistrarEntrada(p_cedula_miembro INT)
 BEGIN
     DECLARE u_asistencia_activa INT;
     DECLARE u_estado_miembro VARCHAR(100);
@@ -181,7 +197,7 @@ BEGIN
 END; //
 
 
-CREATE PROCEDURE RegistrarSalida(IN p_cedula_miembro INT)
+CREATE PROCEDURE RegistrarSalida(p_cedula_miembro INT)
 BEGIN
     DECLARE u_asistencia_activa INT DEFAULT 0;
     DECLARE u_id_asistencia INT DEFAULT 0;
@@ -204,7 +220,7 @@ BEGIN
         WHERE id_asistencia = u_id_asistencia;
     END IF;
 END; //
-CREATE PROCEDURE pagar(IN p_cedula_miembro int)
+CREATE PROCEDURE pagar(p_cedula_miembro int)
 BEGIN
 	DECLARE duracion INT;
     DECLARE precio INT;
@@ -265,7 +281,7 @@ END; //
 -- fin de mostrar informacion
 
 -- filtros
-create procedure Estados(IN p_estado_miembro VARCHAR(100))
+create procedure Estados(p_estado_miembro VARCHAR(100))
 begin
 	if p_estado_miembro='ACTIVO' then
 		select cedula_miembro as Cedula,nombre_miembro as Nombre,apellido_miembro as Apellido, estado_miembro as Estado from miembros where estado_miembro='ACTIVO';
@@ -286,7 +302,7 @@ BEGIN
     inner join miembros m on p.id_miembro=m.id_miembro WHERE estado_pago = 'PAGADO';
 END;//
 
-CREATE PROCEDURE ReporteAsistencias(IN p_Asistencia varchar(100))
+CREATE PROCEDURE ReporteAsistencias(p_Asistencia varchar(100))
 BEGIN
 	IF p_asistencia='DIAS' THEN
 		SELECT DATE(fecha_entrada) AS dia, COUNT(*) AS total_asistencias FROM asistencias
@@ -298,14 +314,14 @@ BEGIN
 
 END;//
 
-CREATE PROCEDURE mostrarMembresiaTipo(IN p_id_membresia INT)
+CREATE PROCEDURE mostrarMembresiaTipo( p_id_membresia INT)
 BEGIN
 select m.cedula_miembro as Cedula, m.nombre_miembro as Nombre,me.nombre_membresia as Membresia from membresias me 
 inner join miembros m on m.id_membresia=me.id_membresia where p_id_membresia=me.id_membresia;
 
 END;//
 
-CREATE PROCEDURE buscar_pagos_por_fecha(IN fecha_inicio DATE, IN fecha_fin DATE)
+CREATE PROCEDURE buscar_pagos_por_fecha(fecha_inicio DATE, fecha_fin DATE)
 BEGIN
     SELECT  m.cedula_miembro AS Cedula,me.nombre_membresia AS Nombre_membresia,
            p.fecha_pago AS Fecha, p.monto_pago AS Pago 
@@ -335,10 +351,10 @@ BEGIN
     SELECT DATEDIFF((SELECT p.fecha_fin_pago FROM pagos p WHERE p.id_miembro = p_id_miembro
 	ORDER BY p.fecha_fin_pago DESC LIMIT 1),CURDATE())INTO diasRestantes; 
 	RETURN diasRestantes;
-END;
-//
+END;//
 
-CREATE PROCEDURE verDiasRestantes(IN p_cedula VARCHAR(20))
+
+CREATE PROCEDURE verDiasRestantes(p_cedula VARCHAR(20))
 BEGIN
     DECLARE v_id INT;
     DECLARE v_dias_restantes INT;
