@@ -44,7 +44,7 @@ CREATE TABLE perfil (
   idPerfil int PRIMARY KEY  AUTO_INCREMENT NOT NULL,
   nombrePerfil varchar(45) NOT NULL
 );
-INSERT INTO perfil VALUES (1,'ADMINISTRADOR'),(2,'TRABAJADOR'),(3,'CLIENTE');
+
 
 CREATE TABLE usuario (
   idUsuario int PRIMARY KEY NOT NULL AUTO_INCREMENT,
@@ -60,45 +60,42 @@ CREATE TABLE cp_usuario(
   contraseña varchar(45) NOT NULL,
   idPerfil int NOT NULL,
   CONSTRAINT fk_cp_usuario_perfil FOREIGN KEY (idPerfil) REFERENCES perfil (idPerfil)
-) ;
-INSERT INTO cp_usuario VALUES (1,'PIPE','1234',1),(2,'JONATHAN','5678',1),(3,'NOSE','9012',2);
+);
+
 
 -- Trigger
 
 DELIMITER //
 CREATE TRIGGER crearUsuario
-AFTER INSERT ON usuario
+AFTER INSERT ON cp_usuario
 FOR EACH ROW
 BEGIN
-    DECLARE nuevo_usr VARCHAR(45);
-    DECLARE nueva_pass VARCHAR(45);
+    DECLARE nuevo_usuario VARCHAR(45);
+    DECLARE nueva_contraseña VARCHAR(45);
 
-    SET nuevo_usr = CONCAT(NEW.usuario,"_", "GY");
-    SET nueva_pass = CONCAT("tuki",New.usuario);
-    INSERT INTO cp_usuario (usuario, contraseña, idPerfil)
-    VALUES (nuevo_usr, nueva_pass, 2);
+    SET nuevo_usuario = CONCAT(NEW.usuario,"-", "gym");
+    SET nueva_contraseña = CONCAT("1234",New.contraseña);
+    INSERT INTO usuario (usuario, contraseña, idPerfil)
+    VALUES (nuevo_usuario, nueva_contraseña, 2);
 END;//
+
 CREATE PROCEDURE registrarUsuario(p_usuario VARCHAR(100),p_contraseña VARCHAR(255))
 BEGIN
-	INSERT usuario(usuario,contraseña,idPerfil) VALUES(p_usuario,p_contraseña,2);
+	INSERT cp_usuario(usuario,contraseña,idPerfil) VALUES(p_usuario,p_contraseña,2);
 END;//
 
 CREATE PROCEDURE verUsuario()
 BEGIN
-	SELECT * FROM cp_usuario ORDER BY idUsuario DESC LIMIT 1;
+	SELECT * FROM usuario ORDER BY idUsuario DESC LIMIT 1;
 END;//
 
-
-
--- Procedures de registros
 CREATE  PROCEDURE login(p_usuario VARCHAR(45), p_pass VARCHAR(45))
 BEGIN
     DECLARE v_idUsuario INT;
-    DECLARE v_usuario VARCHAR(45);
     DECLARE v_idPerfil INT;
 
     SELECT idUsuario, idPerfil INTO v_idUsuario, v_idPerfil
-    FROM cp_usuario 
+    FROM usuario 
     WHERE usuario = p_usuario AND contraseña = p_pass
     LIMIT 1;
     
@@ -149,7 +146,7 @@ BEGIN
     -- este case funciona como un if si la ultima fecha es menor que la actual el estado cambia a pendiente
     -- y ya hace eso 
     SET p.estado_pago = CASE 
-    WHEN ult.ultima_fecha > CURDATE() THEN 'PAGADO'
+    WHEN ult.ultima_fecha >= CURDATE() THEN 'PAGADO'
         ELSE 'PENDIENTE'
     END;
 	 
@@ -191,7 +188,7 @@ BEGIN
             SET MESSAGE_TEXT = 'El miembro ya está adentro';
         ELSE
             INSERT INTO asistencias (id_miembro, fecha_entrada, fecha_salida)
-            VALUES (u_id_miembro, NOW(),NULL);
+            VALUES (u_id_miembro, CURDATE(),NULL);
         END IF;
     END IF;
 END; //
@@ -216,7 +213,7 @@ BEGIN
         ORDER BY fecha_entrada DESC limit 1;
         
         UPDATE asistencias
-        SET fecha_salida = NOW()
+        SET fecha_salida = CURDATE()
         WHERE id_asistencia = u_id_asistencia;
     END IF;
 END; //
@@ -259,16 +256,22 @@ END;//
 
 
 -- mostrar informacion
-CREATE PROCEDURE MostrarMembresias()
+
+CREATE PROCEDURE MostrarComboMembresias()
 BEGIN
     SELECT * FROM membresias;
+END;//
+
+CREATE PROCEDURE MostrarMembresias()
+BEGIN
+    SELECT nombre_membresia, precio_membresia, duracion_membresia FROM membresias;
 END;//
 
 
 CREATE PROCEDURE MostrarAsistencias()
 BEGIN
     SELECT  m.cedula_miembro AS cedula, m.nombre_miembro AS nombre,a.fecha_entrada AS entrada, a.fecha_salida AS salida
-    FROM asistencias a JOIN miembros m ON a.id_miembro = m.id_miembro;
+    FROM asistencias a JOIN miembros m ON a.id_miembro = m.id_miembro ORDER BY fecha_entrada DESC ;
 END; //
 
 
@@ -341,17 +344,18 @@ END;//
 
 -- funciones:
 
-
 CREATE FUNCTION diasRestantesMembresia(p_id_miembro INT)
 RETURNS INT
 DETERMINISTIC
 BEGIN
-    DECLARE diasRestantes INT;
+    DECLARE diasRestantes INT DEFAULT 0;
     
-    SELECT DATEDIFF((SELECT p.fecha_fin_pago FROM pagos p WHERE p.id_miembro = p_id_miembro
-	ORDER BY p.fecha_fin_pago DESC LIMIT 1),CURDATE())INTO diasRestantes; 
-	RETURN diasRestantes;
-END;//
+    SELECT DATEDIFF((SELECT p.fecha_fin_pago FROM pagos p WHERE p.id_miembro = p_id_miembro ORDER BY p.fecha_fin_pago DESC LIMIT 1),CURDATE()) INTO diasRestantes;
+
+    IF diasRestantes < 0 THEN SET diasRestantes = 0; END IF;
+
+    RETURN diasRestantes;
+END//
 
 
 CREATE PROCEDURE verDiasRestantes(p_cedula VARCHAR(20))
@@ -368,40 +372,8 @@ END;
 
 CREATE PROCEDURE verMiembro()
 BEGIN
-	SELECT * FROM miembros;
+	SELECT cedula_miembro, nombre_miembro, telefono_miembro, apellido_miembro, fecha_nacimiento, estado_miembro, fecha_registro FROM miembros;
 END;//
 
-
-
-INSERT INTO membresias (nombre_membresia, precio_membresia, duracion_membresia)
-VALUES ('Mensual', 80000, 30),('Trimestral', 120000, 60),('Anual', 160000, 365);//
-
--- inserts de miembros:
-insert into miembros (cedula_miembro,nombre_miembro,telefono_miembro,apellido_miembro,fecha_nacimiento,id_membresia,estado_miembro,fecha_registro) 
-values(12345,'Andres',12345,'Ruiz','2006-12-25',2,'ACTIVO','2025-10-25'),
-(1001, 'Carlos', '3001112233', 'Gómez', '1990-04-12', 1, 'ACTIVO', '2025-10-04'),
-(1002, 'Laura', '3012223344', 'Martínez', '1995-08-23', 2, 'ACTIVO', '2025-10-21'),
-(1003, 'Andrés', '3023334455', 'Fernández', '1989-12-05', 1, 'ACTIVO','2025-10-30'),
-(1004, 'Valentina', '3034445566', 'López', '1998-02-17', 3, 'ACTIVO', '2025-10-20');//
-
--- inserts de pagos:
-INSERT INTO pagos(id_miembro, fecha_pago, fecha_fin_pago, monto_pago, estado_pago) VALUES
-(1, '2025-09-28', '2025-10-30', 80000, 'PAGADO'),
-(2, '2025-10-05', '2025-11-05', 120000, 'PAGADO'),
-(3, '2025-08-20', '2025-09-20', 80000, 'PAGADO'),
-(4, '2025-10-25', '2025-11-25', 100000, 'PAGADO');//
-
--- inserts de asistencias:
-INSERT INTO asistencias(fecha_entrada, fecha_salida, id_miembro) VALUES
-('2025-11-01 07:00:00', '2025-11-01 09:00:00', 1),
-('2025-11-03 07:15:00', '2025-11-03 09:10:00', 1),
-('2025-11-05 07:20:00', '2025-11-05 09:30:00', 1),
-('2025-11-02 08:00:00', '2025-11-02 10:00:00', 2),
-('2025-11-04 08:10:00', '2025-11-04 10:05:00', 2),
-('2025-11-06 08:30:00', '2025-11-06 10:15:00', 2),
-('2025-11-03 09:00:00', '2025-11-03 11:00:00', 3),
-('2025-11-05 09:10:00', '2025-11-05 11:05:00', 3),
-('2025-11-04 07:30:00', '2025-11-04 09:45:00', 4),
-('2025-11-06 07:25:00', '2025-11-06 09:35:00', 4);//
 
 

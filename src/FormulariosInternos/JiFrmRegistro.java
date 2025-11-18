@@ -56,7 +56,7 @@ public class JiFrmRegistro extends javax.swing.JInternalFrame {
             comboMembresias.addItem("Seleccione");
             membresias.clear();
             Statement stm = con.createStatement();
-            String query ="call  MostrarMembresias()";
+            String query ="call MostrarComboMembresias()";
             ResultSet rs = stm.executeQuery(query);
             
             while(rs.next()){

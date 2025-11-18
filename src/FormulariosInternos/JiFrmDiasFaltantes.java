@@ -26,75 +26,72 @@ public class JiFrmDiasFaltantes extends javax.swing.JInternalFrame {
      * Creates new form JiFrmDiasFaltantes
      */
     dbConnection conexion;
+
     public JiFrmDiasFaltantes() {
         initComponents();
-        conexion=new dbConnection();
+        conexion = new dbConnection();
         txtCedula.setText("");
         verMiembros();
     }
-    
-    public void diasRestantes()
-    {
-        try(Connection con = DriverManager.getConnection(conexion.getUrl(),
-                conexion.getUsername(), conexion.getPassword())){
-            
-            int cedula=Integer.parseInt(txtCedula.getText());
+
+    public void diasRestantes() {
+        try (Connection con = DriverManager.getConnection(conexion.getUrl(),
+                conexion.getUsername(), conexion.getPassword())) {
+
+            int cedula = Integer.parseInt(txtCedula.getText());
             DefaultTableModel modelo = new DefaultTableModel();
             PreparedStatement pstmn = con.prepareCall("call verDiasRestantes(?)");
             pstmn.setInt(1, cedula);
-            
+
             ResultSet rs = pstmn.executeQuery();
             ResultSetMetaData rsmt = rs.getMetaData();
-            
-            for(int i = 1; i<=rsmt.getColumnCount(); i++){
+
+            for (int i = 1; i <= rsmt.getColumnCount(); i++) {
                 modelo.addColumn(rsmt.getColumnLabel(i));
             }
-            
-            while(rs.next()){
+
+            while (rs.next()) {
                 Object[] filas = new Object[rsmt.getColumnCount()];
-                for(int i = 1; i<=rsmt.getColumnCount(); i++){
-                    filas[i-1] = rs.getObject(i);
+                for (int i = 1; i <= rsmt.getColumnCount(); i++) {
+                    filas[i - 1] = rs.getObject(i);
                 }
                 modelo.addRow(filas);
             }
             tableDiasRestantes.setModel(modelo);
-            
-            
-    }catch(SQLException e){
+
+        } catch (SQLException e) {
             JOptionPane.showMessageDialog(rootPane, e.toString());
         }
     }
-    
-    public void verMiembros()
-    {
-        try(Connection con = DriverManager.getConnection(conexion.getUrl(),
-                conexion.getUsername(), conexion.getPassword())){
-            
-            
+
+    public void verMiembros() {
+        try (Connection con = DriverManager.getConnection(conexion.getUrl(),
+                conexion.getUsername(), conexion.getPassword())) {
+
             DefaultTableModel modelo = new DefaultTableModel();
             PreparedStatement pstmn = con.prepareCall("call verMiembro()");
 
             ResultSet rs = pstmn.executeQuery();
             ResultSetMetaData rsmt = rs.getMetaData();
-            
-            for(int i = 1; i<=rsmt.getColumnCount(); i++){
+
+            for (int i = 1; i <= rsmt.getColumnCount(); i++) {
                 modelo.addColumn(rsmt.getColumnLabel(i));
             }
-            
-            while(rs.next()){
+
+            while (rs.next()) {
                 Object[] filas = new Object[rsmt.getColumnCount()];
-                for(int i = 1; i<=rsmt.getColumnCount(); i++){
-                    filas[i-1] = rs.getObject(i);
+                for (int i = 1; i <= rsmt.getColumnCount(); i++) {
+                    filas[i - 1] = rs.getObject(i);
                 }
                 modelo.addRow(filas);
             }
             tableDiasRestantes.setModel(modelo);
-            
-            
-    }catch(SQLException e){
+
+        } catch (SQLException e) {
             JOptionPane.showMessageDialog(rootPane, e.toString());
         }
     }
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -174,7 +171,11 @@ public class JiFrmDiasFaltantes extends javax.swing.JInternalFrame {
 
     private void btnBuscarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBuscarActionPerformed
         // TODO add your handling code here:
-        diasRestantes();
+        try{
+            diasRestantes();
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(rootPane, "Debes ingresar una cedula");
+        }
     }//GEN-LAST:event_btnBuscarActionPerformed
 
 

@@ -43,6 +43,7 @@ public class frmPrincipal extends javax.swing.JFrame {
         initComponents();
         conexion=new dbConnection();
         if (profile != 1){
+            menuReportes.setEnabled(false);
             menuRegistrarMembresia.setEnabled(false);
         }
     }
